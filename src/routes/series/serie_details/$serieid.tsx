@@ -1,0 +1,818 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Eye, Pen, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+// import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  // FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link } from "@tanstack/react-router";
+import Database from "@tauri-apps/plugin-sql";
+import { createFileRoute } from "@tanstack/react-router";
+import { ResultContext } from "@/components/ResultProvider";
+// import { Navigate } from "@tanstack/react-router";
+
+interface SerieType {
+  serie_id: number;
+  description: string;
+  category: string;
+}
+
+interface Question {
+  question_id: number;
+  question_type: string;
+  question_image: Uint8Array;
+  question_audio: Uint8Array;
+  question_answer: Uint8Array;
+  question_video: Uint8Array;
+  question_1: string;
+  question_2: string;
+  question_sug_1: string;
+  question_sug_2: string;
+  question_sug_3: string;
+  question_sug_4: string;
+  correct_answer_code: string;
+  serie_id: number;
+}
+const formSchema = z.object({
+  questionType: z.string({
+    required_error: "Please select an item to display.",
+  }),
+  questionImage: z.instanceof(File),
+  questionAudio: z.instanceof(File),
+  questionAnswer: z.instanceof(File),
+  questionVideo: z.instanceof(File),
+  question1: z.string({
+    required_error: "Please enter a question .",
+  }),
+  question2: z.string(),
+  questionSug1: z.string({
+    required_error: "Please enter a question sug 1 .",
+  }),
+  questionSug2: z.string({
+    required_error: "Please enter a question sug 2 .",
+  }),
+  questionSug3: z.string(),
+  questionSug4: z.string(),
+  questionCorrectAnswer: z.string({
+    required_error: "please enter the correct answer",
+  }),
+});
+
+const serieDetails = () => {
+  const { serieid } = Route.useParams();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      questionType: "",
+      questionImage: new File([], ""),
+      questionAudio: new File([], ""),
+      questionAnswer: new File([], ""),
+      questionVideo: new File([], ""),
+      question1: "",
+      question2: "",
+      questionSug1: "",
+      questionSug2: "",
+      questionSug3: "",
+      questionSug4: "",
+      questionCorrectAnswer: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    questionInsertHandler(values);
+  };
+
+  const serieFormSchema = z.object({
+    serieName: z.string(),
+    serieCategory: z.string(),
+  });
+
+  const serieForm = useForm<z.infer<typeof serieFormSchema>>({
+    resolver: zodResolver(serieFormSchema),
+    defaultValues: {
+      serieName: "",
+      serieCategory: "",
+    },
+  });
+
+  const onSubmitSerie = (values: z.infer<typeof serieFormSchema>) => {
+    serieUpdateHandler(values.serieName, values.serieCategory);
+    getSerieArray();
+    toast({
+      title: "تم تحديث السلسلة بنجاح",
+      duration: 1000,
+    });
+  };
+
+  const convertFileToBlob = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        // Convert ArrayBuffer to Uint8Array for SQLite BLOB storage
+        if (arrayBuffer != null) {
+          const uint8Array = new Uint8Array(arrayBuffer);
+          resolve(uint8Array);
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const { toast } = useToast();
+
+  const questionDeleteHandler = async (question_id: number) => {
+    const db = await Database.load("sqlite:roadcode.db");
+    await db.execute("DELETE FROM QUESTIONS WHERE question_id = $1;", [
+      question_id,
+    ]);
+
+    console.log("delete is clicked");
+  };
+
+  const questionInsertHandler = async (values) => {
+    try {
+      const db = await Database.load("sqlite:roadcode.db");
+
+      await db.execute(
+        `INSERT INTO Questions (
+          question_type,
+          question_image,
+          question_audio,
+          question_answer,
+          question_video,
+          question_1,
+          question_2,
+          question_sug_1,
+          question_sug_2,
+          question_sug_3,
+          question_sug_4,
+          correct_answer_code,
+          serie_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+        [
+          values.questionType,
+          fileData[0], // Image blob
+          fileData[1], // Audio blob
+          fileData[2], // Audio blob
+          fileData[3], // Video blob
+          values.question1,
+          values.question2,
+          values.questionSug1,
+          values.questionSug2,
+          values.questionSug3,
+          values.questionSug4,
+          values.questionCorrectAnswer,
+          serieid,
+        ],
+      );
+
+      console.log("Question inserted successfully");
+      setFileData([]); // Clear the file data after successful insert
+      getQuestions();
+      toast({
+        title: "تمت اضافة السؤال بنجاح",
+        duration: 1000,
+        variant: "succ",
+      });
+    } catch (error) {
+      console.error("Error inserting question:", error);
+    }
+  };
+
+  const serieDeleteHandler = async () => {
+    try {
+      if (questions.length <= 0) {
+        const db = await Database.load("sqlite:roadcode.db");
+        await db.execute("DELETE FROM SERIES WHERE serie_id = $1", [serieid]);
+
+        console.log("serie deleted");
+      } else {
+        console.log(
+          "this serie has questions delete them first thene delete the serie",
+        );
+      }
+    } catch (error) {
+      console.error("somting went wrong : ", error);
+    }
+  };
+
+  const serieUpdateHandler = async (
+    description: string,
+    serieCategory: string,
+  ) => {
+    const db = await Database.load("sqlite:roadcode.db");
+    await db.execute(
+      "UPDATE SERIES SET description = $1 , category = $2 WHERE serie_id = $3;",
+      [description, serieCategory, serieid],
+    );
+    console.log("update series");
+  };
+
+  const [serie, setSerie] = useState<SerieType | null>(null);
+
+  const getSerieArray = async () => {
+    const data = await getSerie();
+    if (data) {
+      setSerie(data);
+    }
+  };
+
+  const getSerie = async () => {
+    try {
+      const db = await Database.load("sqlite:roadcode.db");
+      const result = await db.select(
+        "SELECT serie_id, description FROM SERIES WHERE serie_id = $1;",
+        [serieid],
+      );
+
+      // Check if we got results
+      if (Array.isArray(result) && result.length > 0) {
+        return result[0] as SerieType; // Return the first result
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching series data:", error);
+      return null;
+    }
+  };
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  const getQuestions = async () => {
+    try {
+      const db = await Database.load("sqlite:roadcode.db");
+
+      const result = await db.select(
+        "SELECT * FROM Questions WHERE serie_id = $1;",
+        [serieid],
+      );
+
+      if (Array.isArray(result)) {
+        setQuestions(result);
+        return result;
+      }
+    } catch (error) {
+      console.error("Error details:", error);
+      return [];
+    }
+  };
+
+  const [showQuestion, setShowQuestions] = useState(false);
+
+  // Use useEffect with proper dependency tracking
+  useEffect(() => {
+    const fetchData = async () => {
+      await getSerieArray();
+      await getQuestions();
+    };
+
+    fetchData();
+  }, [serieid]); // Add serieid as dependency
+
+  // Separate useEffect for monitoring questions state
+  useEffect(() => {
+    if (questions.length > 0) {
+      setShowQuestions(true);
+    } else {
+      setShowQuestions(false);
+    }
+  }, [questions]); // Add questions as dependency
+
+  const handleFileChange = async (e, field, setFileData) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        field.onChange(file); // Update form field
+        const blobData = await convertFileToBlob(file);
+        setFileData((prevData) => [...prevData, blobData]);
+      } catch (error) {
+        console.error("Error processing file:", error);
+      }
+    }
+  };
+
+  const [fileData, setFileData] = useState<any[]>([]);
+
+  const navigation = Route.useNavigate();
+  const transformData = (serie: SerieType) => {
+    return {
+      serieName: serie?.description,
+      serieCategory: serie?.category,
+    };
+  };
+
+  useEffect(() => {
+    if (serie) {
+      serieForm.reset(transformData(serie));
+    }
+  }, [serie]);
+  return (
+    <div className="container mx-auto h-screen w-screen flex flex-col items-center py-4 gap-8 ">
+      {/*Hello World {serieid}*/}
+      <div className=" w-96 h-60 flex flex-col justify-center items-center gap-8 rounded-xl border p-4 ">
+        <h1 className="text-3xl">{serie?.description}</h1>
+        <div className="flex gap-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Pen className="text-green-700" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>تعديل السلسلة</DialogTitle>
+              </DialogHeader>
+              <div>
+                <Form {...serieForm}>
+                  <form onSubmit={serieForm.handleSubmit(onSubmitSerie)}>
+                    <div className="flex flex-col justify-center items-center gap-6">
+                      <FormField
+                        control={serieForm.control}
+                        name="serieName"
+                        render={({ field }) => (
+                          <FormItem className="w-60">
+                            <FormLabel>اسم السلسلة</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={serieForm.control}
+                        name="serieCategory"
+                        render={({ field }) => (
+                          <FormItem className="w-60">
+                            <FormLabel>صنف السلسلة :</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="اختيار صنف السلسلة" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="A">A</SelectItem>
+                                <SelectItem value="B">B</SelectItem>
+                                <SelectItem value="C">C</SelectItem>
+                                <SelectItem value="D">D</SelectItem>
+                                <SelectItem value="E">E</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="space-y-2">
+                        <Button type="submit">تعديل</Button>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <AlertDialog >
+            <AlertDialogTrigger asChild>
+              <Button>
+                <Trash2 className="text-red-700" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent >
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-right" >
+                  هل انت متاكد
+                </AlertDialogTitle>
+                <AlertDialogDescription  className="text-right"  >
+                  هل حقا تريد حذف السلسلة
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>لا</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    let hasQuestions = questions.length <= 0 ? true : false;
+                    if (hasQuestions) {
+                      serieDeleteHandler();
+                      navigation({ to: "/" });
+                      toast({
+                        title: "لقد تم حذف السلسلة بنجاح",
+                        duration: 1000,
+                        variant : "succ"
+                      });
+                    } else {
+                      toast({
+                        title: "انتباه",
+                        description: "لا يمكن حذف هذه السلسلة حتى تقوم بحذف الاسئلة",
+                        duration: 1000,
+                        variant : "destructive"
+                      });
+                    }
+                  }}
+                >
+                  نعم
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button>
+            <Link to="/">
+              <ArrowLeft />
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 grid-rows-auto py-6 w-full ">
+        <div className="col-start-1 col-end-5 flex justify-between items-center text-right">
+          <Drawer>
+            <DrawerTrigger
+              asChild
+            >
+              <Button>اضافة</Button>
+            </DrawerTrigger>
+            <DrawerContent className="h-screen grid justify-center text-right ">
+              <DrawerTitle>اضافة سؤال جديد</DrawerTitle>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="grid grid-cols-2 gap-12"
+                >
+                  <div className="flex flex-col gap-6" dir="rtl">
+                    <FormField
+                      control={form.control}
+                      name="question2"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>السؤال رقم 2</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionSug1"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>اجابة 1</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionSug2"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>اجابة 2</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionSug3"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>اجابة 3</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionSug4"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>4 اجابة</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionCorrectAnswer"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>
+                            ارقام الاجوبة الصحيحة
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-6 " dir="rtl">
+                    <FormField
+                      control={form.control}
+                      name="questionType"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>نوع السؤال</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="اختيار نوع السؤال" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1QMS">1QMS</SelectItem>
+                              <SelectItem value="2Q4S">2Q4S</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="questionImage"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>صورة السؤال</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleFileChange(
+                                  e,
+                                  field,
+                                  setFileData,
+                                )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionAudio"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>
+                            المقطع الصوتي - السؤال
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="audio/*"
+                              onChange={(e) =>
+                                handleFileChange(
+                                  e,
+                                  field,
+                                  setFileData,
+                                )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="questionAnswer"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>
+                            المقطع الصوتي - الاجابة
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="audio/*"
+                              onChange={(e) =>
+                                handleFileChange(
+                                  e,
+                                  field,
+                                  setFileData,
+                                )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="questionVideo"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>
+                            مقطع الفيديو
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="video/*"
+                              onChange={(e) =>
+                                handleFileChange(
+                                  e,
+                                  field,
+                                  setFileData,
+                                )}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="question1"
+                      render={({ field }) => (
+                        <FormItem className="w-60">
+                          <FormLabel>السؤال رقم 1</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="col-start-1 col-end-3 flex justify-center items-center gap-4 h-1/6 ">
+                    <DrawerClose asChild>
+                      <Button onClick={() => form.reset()}>
+                        الغاء
+                      </Button>
+                    </DrawerClose>
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        onClick={() => {
+                        }}
+                      >
+                        تاكيد
+                      </Button>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        form.reset();
+                      }}
+                    >
+                      تصحيح
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DrawerContent>
+          </Drawer>
+          <h1 className="text-2xl font-bold ">لائحة الأسئلة</h1>
+        </div>
+
+        {showQuestion
+          ? questions.map((question, index) => {
+            return (
+              <Card
+                key={index}
+                className="w-64 text-center flex flex-col justify-center items-center text-right"
+                dir="rtl"
+              >
+                <CardHeader>
+                  <CardTitle>السؤال {index + 1}</CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="flex gap-4">
+                    <Link
+                      to={`/series/serie_details/question_details/${question.question_id}`}
+                      params={{ questionid: `${question.question_id}` }}
+                    >
+                      <Eye className="text-green-700" />
+                    </Link>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Trash2 className="text-red-700" />
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-right">
+                            هل انت متأكد
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-right">
+                            هل حقا تريد حدف السؤال رقم {index + 1}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>لا</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              questionDeleteHandler(question.question_id);
+                              toast({
+                                title: "تم حذف السؤال بنجاح",
+                                duration: 1000,
+                                variant: "succ",
+                              });
+
+                              getQuestions();
+                            }}
+                          >
+                            نعم
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+          : (
+            <Card className="col-start-2 col-end-4" dir="rtl">
+              <CardHeader>
+                السلسلة فارغة
+              </CardHeader>
+              <CardContent>
+                ليس هناك اي سؤال في هذه السلسلة
+              </CardContent>
+            </Card>
+          )}
+      </div>
+    </div>
+  );
+};
+
+export const Route = createFileRoute("/series/serie_details/$serieid")({
+  component: serieDetails,
+});

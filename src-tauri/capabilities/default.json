@@ -1,0 +1,187 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "sql:default",
+    "sql:allow-execute",
+    {
+      "identifier": "fs:read-all",
+      "allow": [
+{
+  "path": "/home/spider/.config/com.coderoad.app/roadcode.db"
+},
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$APPCONFIG"
+        },
+        {
+          "path": "$APPCONFIG/**"
+        },
+        {
+          "path": "$APPLOCALDATA"
+        },
+        {
+          "path": "$APPLOCALDATA/**"
+        },
+        {
+          "path": "$DOCUMENT"
+        },
+        {
+          "path": "$DOCUMENT/**"
+        },
+        {
+          "path": "$DOWNLOAD"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        },
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        },
+        {
+          "path": "$PICTURE"
+        },
+        {
+          "path": "$PICTURE/**"
+        },
+        {
+          "path": "$PUBLIC"
+        },
+        {
+          "path": "$PUBLIC/**"
+        },
+        {
+          "path": "$RUNTIME"
+        },
+        {
+          "path": "$RUNTIME/**"
+        },
+        {
+          "path": "$TEMPLATE"
+        },
+        {
+          "path": "$TEMPLATE/**"
+        },
+        {
+          "path": "$VIDEO"
+        },
+        {
+          "path": "$VIDEO/**"
+        },
+        {
+          "path": "$RESOURCE"
+        },
+        {
+          "path": "$RESOURCE/**"
+        },
+        {
+          "path": "$TEMP"
+        },
+        {
+          "path": "$TEMP/**"
+        }
+      ]
+    },    {
+      "identifier": "fs:write-all",
+      "allow": [
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$APPCONFIG"
+        },
+        {
+          "path": "$APPCONFIG/**"
+        },
+        {
+          "path": "$APPLOCALDATA"
+        },
+        {
+          "path": "$APPLOCALDATA/**"
+        },
+        {
+          "path": "$DOCUMENT"
+        },
+        {
+          "path": "$DOCUMENT/**"
+        },
+        {
+          "path": "$DOWNLOAD"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        },
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        },
+        {
+          "path": "$PICTURE"
+        },
+        {
+          "path": "$PICTURE/**"
+        },
+        {
+          "path": "$PUBLIC"
+        },
+        {
+          "path": "$PUBLIC/**"
+        },
+        {
+          "path": "$RUNTIME"
+        },
+        {
+          "path": "$RUNTIME/**"
+        },
+        {
+          "path": "$TEMPLATE"
+        },
+        {
+          "path": "$TEMPLATE/**"
+        },
+        {
+          "path": "$VIDEO"
+        },
+        {
+          "path": "$VIDEO/**"
+        },
+        {
+          "path": "$RESOURCE"
+        },
+        {
+          "path": "$RESOURCE/**"
+        },
+        {
+          "path": "$TEMP"
+        },
+        {
+          "path": "$TEMP/**"
+        },
+        {
+  "path": "/home/spider/.config/com.coderoad.app/roadcode.db"
+}
+      ]
+    },
+    "dialog:default",
+    "os:default"
+  ]
+}

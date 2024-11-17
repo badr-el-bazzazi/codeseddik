@@ -53,7 +53,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import Database from "@tauri-apps/plugin-sql";
 import { createFileRoute } from "@tanstack/react-router";
-import { ResultContext } from "@/components/ResultProvider";
+// import { ResultContext } from "@/components/ResultProvider";
 // import { Navigate } from "@tanstack/react-router";
 
 interface SerieType {
@@ -61,7 +61,16 @@ interface SerieType {
   description: string;
   category: string;
 }
-
+// interface valuesType {
+//   question1: string;
+//   question2: string;
+//   questionSug1: string;
+//   questionSug2: string;
+//   questionSug3: string;
+//   questionSug4: string;
+//   questionCorrectAnswer: number;
+//   questionType: string;
+// }
 interface Question {
   question_id: number;
   question_type: string;
@@ -79,26 +88,26 @@ interface Question {
   serie_id: number;
 }
 const formSchema = z.object({
-  questionType: z.string({
+  question_type: z.string({
     required_error: "Please select an item to display.",
   }),
-  questionImage: z.instanceof(File),
-  questionAudio: z.instanceof(File),
-  questionAnswer: z.instanceof(File),
-  questionVideo: z.instanceof(File),
-  question1: z.string({
+  question_image: z.instanceof(File),
+  question_audio: z.instanceof(File),
+  question_answer: z.instanceof(File),
+  question_video: z.instanceof(File),
+  question_1: z.string({
     required_error: "Please enter a question .",
   }),
-  question2: z.string(),
-  questionSug1: z.string({
+  question_2: z.string(),
+  question_sug_1: z.string({
     required_error: "Please enter a question sug 1 .",
   }),
-  questionSug2: z.string({
+  question_sug_2: z.string({
     required_error: "Please enter a question sug 2 .",
   }),
-  questionSug3: z.string(),
-  questionSug4: z.string(),
-  questionCorrectAnswer: z.string({
+  question_sug_3: z.string(),
+  question_sug_4: z.string(),
+  correct_answer_code: z.string({
     required_error: "please enter the correct answer",
   }),
 });
@@ -109,22 +118,25 @@ const serieDetails = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      questionType: "",
-      questionImage: new File([], ""),
-      questionAudio: new File([], ""),
-      questionAnswer: new File([], ""),
-      questionVideo: new File([], ""),
-      question1: "",
-      question2: "",
-      questionSug1: "",
-      questionSug2: "",
-      questionSug3: "",
-      questionSug4: "",
-      questionCorrectAnswer: "",
+      question_type: "",
+      question_image: new File([], ""),
+      question_audio: new File([], ""),
+      question_answer: new File([], ""),
+      question_video: new File([], ""),
+      question_1: "",
+      question_2: "",
+      question_sug_1: "",
+      question_sug_2: "",
+      question_sug_3: "",
+      question_sug_4: "",
+      correct_answer_code: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  // const onSubmit = (values: z.infer<typeof formSchema>) => {
+  //   questionInsertHandler(values : formSchema);
+  // };  
+  const onSubmit = (values: any) => {
     questionInsertHandler(values);
   };
 
@@ -150,19 +162,20 @@ const serieDetails = () => {
     });
   };
 
-  const convertFileToBlob = (file) => {
+  const convertFileToBlob = (file: Object) => {
+    console.log(typeof file);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const arrayBuffer = reader.result;
         // Convert ArrayBuffer to Uint8Array for SQLite BLOB storage
         if (arrayBuffer != null) {
-          const uint8Array = new Uint8Array(arrayBuffer);
+          const uint8Array = new Uint8Array(arrayBuffer as ArrayBufferLike);
           resolve(uint8Array);
         }
       };
       reader.onerror = () => reject(reader.error);
-      reader.readAsArrayBuffer(file);
+      reader.readAsArrayBuffer(file as Blob);
     });
   };
 
@@ -177,7 +190,8 @@ const serieDetails = () => {
     console.log("delete is clicked");
   };
 
-  const questionInsertHandler = async (values) => {
+  const questionInsertHandler = async (values :Question) => {
+    console.log(typeof values);
     try {
       const db = await Database.load("sqlite:roadcode.db");
 
@@ -198,18 +212,18 @@ const serieDetails = () => {
           serie_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
         [
-          values.questionType,
+          values.question_type,
           fileData[0], // Image blob
           fileData[1], // Audio blob
           fileData[2], // Audio blob
           fileData[3], // Video blob
-          values.question1,
-          values.question2,
-          values.questionSug1,
-          values.questionSug2,
-          values.questionSug3,
-          values.questionSug4,
-          values.questionCorrectAnswer,
+          values.question_1,
+          values.question_2,
+          values.question_sug_1,
+          values.question_sug_2,
+          values.question_sug_3,
+          values.question_sug_4,
+          values.correct_answer_code,
           serieid,
         ],
       );
@@ -326,13 +340,16 @@ const serieDetails = () => {
     }
   }, [questions]); // Add questions as dependency
 
-  const handleFileChange = async (e, field, setFileData) => {
+  const handleFileChange = async (e : any, field : any, setFileData : any) => {
+    console.log(typeof(e))
+    console.log(typeof(field))
+    console.log(typeof(setFileData))
     const file = e.target.files?.[0];
     if (file) {
       try {
         field.onChange(file); // Update form field
         const blobData = await convertFileToBlob(file);
-        setFileData((prevData) => [...prevData, blobData]);
+        setFileData((prevData : any) => [...prevData, blobData]);
       } catch (error) {
         console.error("Error processing file:", error);
       }
@@ -423,18 +440,18 @@ const serieDetails = () => {
               </div>
             </DialogContent>
           </Dialog>
-          <AlertDialog >
+          <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button>
                 <Trash2 className="text-red-700" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent >
+            <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-right" >
+                <AlertDialogTitle className="text-right">
                   هل انت متاكد
                 </AlertDialogTitle>
-                <AlertDialogDescription  className="text-right"  >
+                <AlertDialogDescription className="text-right">
                   هل حقا تريد حذف السلسلة
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -449,14 +466,15 @@ const serieDetails = () => {
                       toast({
                         title: "لقد تم حذف السلسلة بنجاح",
                         duration: 1000,
-                        variant : "succ"
+                        variant: "succ",
                       });
                     } else {
                       toast({
                         title: "انتباه",
-                        description: "لا يمكن حذف هذه السلسلة حتى تقوم بحذف الاسئلة",
+                        description:
+                          "لا يمكن حذف هذه السلسلة حتى تقوم بحذف الاسئلة",
                         duration: 1000,
-                        variant : "destructive"
+                        variant: "destructive",
                       });
                     }
                   }}
@@ -492,7 +510,7 @@ const serieDetails = () => {
                   <div className="flex flex-col gap-6" dir="rtl">
                     <FormField
                       control={form.control}
-                      name="question2"
+                      name="question_2"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>السؤال رقم 2</FormLabel>
@@ -505,7 +523,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionSug1"
+                      name="question_sug_1"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>اجابة 1</FormLabel>
@@ -518,7 +536,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionSug2"
+                      name="question_sug_2"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>اجابة 2</FormLabel>
@@ -531,7 +549,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionSug3"
+                      name="question_sug_3"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>اجابة 3</FormLabel>
@@ -544,7 +562,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionSug4"
+                      name="question_sug_4"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>4 اجابة</FormLabel>
@@ -557,7 +575,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionCorrectAnswer"
+                      name="correct_answer_code"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>
@@ -574,7 +592,7 @@ const serieDetails = () => {
                   <div className="flex flex-col gap-6 " dir="rtl">
                     <FormField
                       control={form.control}
-                      name="questionType"
+                      name="question_type"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>نوع السؤال</FormLabel>
@@ -599,7 +617,7 @@ const serieDetails = () => {
 
                     <FormField
                       control={form.control}
-                      name="questionImage"
+                      name="question_image"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>صورة السؤال</FormLabel>
@@ -621,7 +639,7 @@ const serieDetails = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="questionAudio"
+                      name="question_audio"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>
@@ -646,7 +664,7 @@ const serieDetails = () => {
 
                     <FormField
                       control={form.control}
-                      name="questionAnswer"
+                      name="question_answer"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>
@@ -671,7 +689,7 @@ const serieDetails = () => {
 
                     <FormField
                       control={form.control}
-                      name="questionVideo"
+                      name="question_video"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>
@@ -696,7 +714,7 @@ const serieDetails = () => {
 
                     <FormField
                       control={form.control}
-                      name="question1"
+                      name="question_1"
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>السؤال رقم 1</FormLabel>

@@ -109,7 +109,7 @@ const QuestionDtail = () => {
     updateQuestionsHandler(values);
   };
 
-  const updateQuestionsHandler = async (values) => {
+  const updateQuestionsHandler = async (values : any) => {
     try {
       const db = await Database.load("sqlite:roadcode.db");
       await db.execute(
@@ -369,14 +369,14 @@ const QuestionDtail = () => {
     }
   };
 
-  const convertFileToBlob = (file) => {
+  const convertFileToBlob = (file : any) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const arrayBuffer = reader.result;
         // Convert ArrayBuffer to Uint8Array for SQLite BLOB storage
         if (arrayBuffer != null) {
-          const uint8Array = new Uint8Array(arrayBuffer);
+          const uint8Array = new Uint8Array((arrayBuffer as ArrayBufferLike));
           resolve(uint8Array);
         }
       };
@@ -385,13 +385,13 @@ const QuestionDtail = () => {
     });
   };
 
-  const handleFileChange = async (e, field, setFileData) => {
+  const handleFileChange = async (e : any, field : any, setFileData : any) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         field.onChange(file); // Update form field
         const blobData = await convertFileToBlob(file);
-        setFileData((prevData) => [...prevData, blobData]);
+        setFileData((prevData : any) => [...prevData, blobData]);
       } catch (error) {
         console.error("Error processing file:", error);
       }
@@ -400,30 +400,58 @@ const QuestionDtail = () => {
 
   const [fileData, setFileData] = useState<Uint8Array[]>([]);
 
-  const getMediaURL = (mediaData, type) => {
+  const getMediaURL = (mediaData: string | Uint8Array | undefined, type: string) => {
     if (!mediaData) return "";
 
-    // Convert the string representation of array to Uint8Array
-    const parsedMediaData = new Uint8Array(JSON.parse(mediaData));
+    try {
+      let uint8Array: Uint8Array;
 
-    // Determine MIME type based on media type
-    let mimeType;
-    switch (type) {
-      case "audio":
+      // Check if it's a base64-encoded image
+      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+        return mediaData; // Directly return the base64 string as the src for the image
+      }
+
+      // Check if mediaData is a string and parse it (for non-image types)
+      if (typeof mediaData === "string") {
+        // Parse the string representation of the array
+        const parsedMediaData = JSON.parse(mediaData);
+
+        // Ensure it's an array-like structure of numbers
+        if (
+          !Array.isArray(parsedMediaData) ||
+          !parsedMediaData.every((item) => typeof item === "number")
+        ) {
+          throw new Error("Invalid media data format");
+        }
+
+        // Convert the parsed array to Uint8Array
+        uint8Array = new Uint8Array(parsedMediaData);
+      } else {
+        // If it's already a Uint8Array, use it directly
+        uint8Array = mediaData;
+      }
+
+      // Determine MIME type based on the type parameter
+      let mimeType: string;
+      if (type === "audio") {
         mimeType = "audio/mpeg";
-        break;
-      case "video":
-        mimeType = "video/mp4"; // Most common video format, adjust if needed
-        break;
-      case "image":
-      default:
-        mimeType = "image/jpeg";
+      } else if (type === "video") {
+        mimeType = "video/mp4"; // Adjust for video
+      } else if (type === "image") {
+        mimeType = "image/jpeg"; // Adjust for images based on your data format
+      } else {
+        throw new Error("Unsupported media type");
+      }
+
+      // Create a blob and return the URL
+      const blob = new Blob([uint8Array], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error processing media data:", error);
+      return "";
     }
-
-    const blob = new Blob([parsedMediaData], { type: mimeType });
-    return URL.createObjectURL(blob);
-  };
-
+  }
   // for audios card and controls
   const audioRefQuestion = useRef<HTMLAudioElement | any>();
   const audioRefAnswer = useRef<HTMLAudioElement | any>();
@@ -457,7 +485,7 @@ const QuestionDtail = () => {
     }
   }, [questionVolume]);
 
-  const transformData = (questionne) => {
+  const transformData = (questionne : any) => {
     return {
       questionType: questionne?.question_type || "1QMS",
       question1: questionne?.question_1,

@@ -3,35 +3,39 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
-import { Card,  CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@tanstack/react-router";
 import Database from "@tauri-apps/plugin-sql";
 import { ArrowLeft } from "lucide-react";
 
-function ResultIndex() {
-  const { resultContext, setResultContext } = useContext(ResultContext);
 
+function ResultIndex() {
+
+  const context = useContext(ResultContext);
+  if (!context) {
+    throw new Error("useContext must be used within ResultContextProvider");
+  }
+  const { resultContext, setResultContext } = context;
   const navigate = useNavigate();
 
   const [total, setTotal] = useState(0);
 
   const [questionId, setQuestionId] = useState(0);
 
-
-  const [serieName , setSerieName ] = useState("");
+  const [serieName, setSerieName] = useState("");
 
   interface resultType {
-    questionId : number;
-    correct :boolean;
+    questionId: number;
+    correct: boolean;
   }
 
   useEffect(() => {
     let count = 0;
-    resultContext?.forEach((item :resultType) => {
+    resultContext?.forEach((item: resultType) => {
       if (item.correct === true) {
         count++;
       }
-        setQuestionId(item.questionId);
+      setQuestionId(item.questionId);
     });
     setTotal(count);
 
@@ -49,9 +53,8 @@ function ResultIndex() {
       );
 
       if (Array.isArray(name) && name.length > 0) {
-        
         // console.log(name);
-        setSerieName(name[0].description)
+        setSerieName(name[0].description);
         return name;
       } else {
         throw new Error("No name found with the given ID");
@@ -63,12 +66,11 @@ function ResultIndex() {
   useEffect(() => {
     const fetchSerieName = async () => {
       await getSerieName();
-    }
+    };
 
     fetchSerieName();
     // getSerieName();
   }, [questionId]);
-
 
   return (
     <div className="container mx-auto  flex flex-col gap-8  justify-center items-center ">

@@ -1,21 +1,34 @@
-import { Children, createContext, useState } from "react";
+import { createContext, useState, ReactNode } from 'react';
 
-const ResultContext = createContext([]);
+interface resultType {
+  questionId: number;
+  correct: boolean;
+}
 
-export const ResultProvider = ({ children }) => {
-  const [resultContext, setResultContext] = useState();
-  const [mode , setMode] = useState("");
+interface ResultContextType {
+  children: ReactNode;
+  getResult: () => resultType[];
+  resultContext: resultType[];
+  setResultContext: React.Dispatch<React.SetStateAction<resultType[]>>;
+  mode: string;
+  setMode: React.Dispatch<React.SetStateAction<string>>;
+}
 
-  const getResult = () => {
+export const ResultContext = createContext<ResultContextType | undefined>(undefined);
+
+export const ResultProvider = ({ children }: ResultContextType) => {
+  const [resultContext, setResultContext] = useState<resultType[]>([]);
+  const [mode, setMode] = useState('');
+
+  const getResult = (): resultType[] => {
     return resultContext;
   };
 
   return (
-    <ResultContext.Provider value={{ getResult, resultContext, setResultContext , mode , setMode }}>
+    <ResultContext.Provider
+      value={{ children, getResult, resultContext, setResultContext, mode, setMode }}
+    >
       {children}
     </ResultContext.Provider>
   );
 };
-
-
-export { ResultContext };

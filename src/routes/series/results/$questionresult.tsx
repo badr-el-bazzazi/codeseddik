@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import Database from "@tauri-apps/plugin-sql";
-import { Card, CardContent} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft,
   Check,
@@ -70,7 +70,7 @@ const QuestionResultDetails = () => {
       }
     } catch (error) {
       console.error("Error fetching question:", error);
-      setQuestion(null);
+      setQuestion(undefined);
     }
   };
 
@@ -88,31 +88,63 @@ const QuestionResultDetails = () => {
   }, []);
 
 
-  const getMediaURL = (mediaData, type) => {
+  const getMediaURL = (
+    mediaData: string | Uint8Array | undefined,
+    type: string,
+  ) => {
     if (!mediaData) return "";
 
-    // Convert the string representation of array to Uint8Array
-    const parsedMediaData = new Uint8Array(JSON.parse(mediaData));
+    try {
+      let uint8Array: Uint8Array;
 
-    // Determine MIME type based on media type
-    let mimeType;
-    switch (type) {
-      case "audio":
+      // Check if it's a base64-encoded image
+      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+        return mediaData; // Directly return the base64 string as the src for the image
+      }
+
+      // Check if mediaData is a string and parse it (for non-image types)
+      if (typeof mediaData === "string") {
+        // Parse the string representation of the array
+        const parsedMediaData = JSON.parse(mediaData);
+
+        // Ensure it's an array-like structure of numbers
+        if (
+          !Array.isArray(parsedMediaData) ||
+          !parsedMediaData.every((item) => typeof item === "number")
+        ) {
+          throw new Error("Invalid media data format");
+        }
+
+        // Convert the parsed array to Uint8Array
+        uint8Array = new Uint8Array(parsedMediaData);
+      } else {
+        // If it's already a Uint8Array, use it directly
+        uint8Array = mediaData;
+      }
+
+      // Determine MIME type based on the type parameter
+      let mimeType: string;
+      if (type === "audio") {
         mimeType = "audio/mpeg";
-        break;
-      case "video":
-        mimeType = "video/mp4"; // Most common video format, adjust if needed
-        break;
-      case "image":
-      default:
-        mimeType = "image/jpeg";
-    }
+      } else if (type === "video") {
+        mimeType = "video/mp4"; // Adjust for video
+      } else if (type === "image") {
+        mimeType = "image/jpeg"; // Adjust for images based on your data format
+      } else {
+        throw new Error("Unsupported media type");
+      }
 
-    const blob = new Blob([parsedMediaData], { type: mimeType });
-    return URL.createObjectURL(blob);
+      // Create a blob and return the URL
+      const blob = new Blob([uint8Array], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error processing media data:", error);
+      return "";
+    }
   };
 
-  const getQuestionSuggestions = (question: Question) => {
+  const getQuestionSuggestions = (question: Question | undefined) => {
     if (question) {
       return Object.entries(question)
         .filter(([key, value]) => key.startsWith("question_sug_") && value)
@@ -126,7 +158,7 @@ const QuestionResultDetails = () => {
   const questionsStrusture = () => {
     const correctAnswers =
       questionne?.correct_answer_code?.toString()?.split("").map(Number) || [];
-    const isCorrect = (index) => correctAnswers.includes(index + 1);
+    const isCorrect = (index: number) => correctAnswers.includes(index + 1);
 
     if (questionne?.question_type === "1QMS") {
       if (
@@ -204,13 +236,17 @@ const QuestionResultDetails = () => {
             </p>
             <div className="flex justify-center items-center gap-12">
               <div className="flex items-center gap-2">
-                <p className="text-2xl text-center">{questionne?.question_sug_3}</p>
+                <p className="text-2xl text-center">
+                  {questionne?.question_sug_3}
+                </p>
                 {isCorrect(2)
                   ? <Check className="text-green-500 w-6 h-6" />
                   : <X className="text-red-500 w-6 h-6" />}
               </div>
               <div className="flex items-center gap-2">
-                <p className="text-2xl text-center">{questionne?.question_sug_4}</p>
+                <p className="text-2xl text-center">
+                  {questionne?.question_sug_4}
+                </p>
                 {isCorrect(3)
                   ? <Check className="text-green-500 w-6 h-6" />
                   : <X className="text-red-500 w-6 h-6" />}
@@ -393,7 +429,6 @@ const QuestionResultDetails = () => {
           </Card>
         </div>
       </div>
-
     </div>
   );
 };

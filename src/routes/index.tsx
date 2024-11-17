@@ -66,6 +66,10 @@ const serieFormSchema = z.object({
   serieCategory: z.string(),
 });
 
+interface CountResult {
+  count: number;
+}
+
 function Index() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,7 +100,12 @@ function Index() {
     }
   }, [series]);
 
-  const { mode, setMode } = useContext(ResultContext);
+  const context = useContext(ResultContext);
+  if (!context) {
+    throw new Error("useContext must be used within ResultContextProvider");
+  }
+
+  const { mode, setMode } = context;
 
   const dbExportWindows = async () => {
     const mainDB = await exists("roadcode.db", {
@@ -263,7 +272,8 @@ function Index() {
   const [category, setCategory] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  // const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, _] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -339,7 +349,8 @@ function Index() {
         params.push(category);
       }
 
-      const result = await db.select(query, params);
+      // const result = await db.select(query, params);
+      const result = (await db.select(query, params)) as CountResult[];
       return result[0].count;
     } catch (error) {
       console.error("Error fetching total count:", error);

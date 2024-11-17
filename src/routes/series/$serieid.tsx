@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {  useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import logo from "../../assets/logo1.png";
-import { useToast } from "@/hooks/use-toast";
 import Database from "@tauri-apps/plugin-sql";
 import {
   ArrowBigLeft,
@@ -30,10 +29,13 @@ interface Question {
   question_type: string;
   serie_id: number;
 }
+interface ResultType {
+  questionId: number;
+  correct: boolean;
+}
+
 const SeriesPage = () => {
   const { serieid } = Route.useParams();
-
-  const { toast } = useToast();
 
   const navigation = Route.useNavigate();
 
@@ -46,8 +48,7 @@ const SeriesPage = () => {
   let [time, setTime] = useState(30);
 
   let [otp, setOTP] = useState("");
-  let [btnColor, setBtnColor] = useState(false);
-  let [questionOpen, setQuestionOPen] = useState(false);
+  let [_, setBtnColor] = useState(false);
 
   const handleInput = (num: number /*index : number*/) => {
     const inputix = (num + 1).toString();
@@ -89,8 +90,7 @@ const SeriesPage = () => {
     });
   }
 
-
-  const [questionPosition, setQuestionPosition] = useState(0);
+  const [questionPosition, setQuestionPosition] = useState<number>(0);
 
   const getSerieQuestions = async () => {
     try {
@@ -133,8 +133,8 @@ const SeriesPage = () => {
     }
   }, [serieid]); // Dependency on serieid ensures fetch when serieid changes
 
-
   const handlePrevQuestion = () => {
+    setIsVideoEnded(true);
     // Filter out the result for the current question
     setResult(
       result?.filter((item) =>
@@ -157,17 +157,58 @@ const SeriesPage = () => {
     });
   };
 
-  const getMediaURL = (mediaData, type) => {
+
+  const getMediaURL = (mediaData: string | Uint8Array, type: string) => {
     if (!mediaData) return "";
 
-    // Convert the string representation of array to Uint8Array
-    const parsedMediaData = new Uint8Array(JSON.parse(mediaData));
+    try {
+      let uint8Array: Uint8Array;
 
-    // Determine MIME type
-    const mimeType = type === "audio" ? "audio/mpeg" : "image/jpeg"; // Use 'audio/mpeg' for MP3 or adjust as needed
-    const blob = new Blob([parsedMediaData], { type: mimeType });
+      // Check if it's a base64-encoded image
+      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+        return mediaData; // Directly return the base64 string as the src for the image
+      }
 
-    return URL.createObjectURL(blob);
+      // Check if mediaData is a string and parse it (for non-image types)
+      if (typeof mediaData === "string") {
+        // Parse the string representation of the array
+        const parsedMediaData = JSON.parse(mediaData);
+
+        // Ensure it's an array-like structure of numbers
+        if (
+          !Array.isArray(parsedMediaData) ||
+          !parsedMediaData.every((item) => typeof item === "number")
+        ) {
+          throw new Error("Invalid media data format");
+        }
+
+        // Convert the parsed array to Uint8Array
+        uint8Array = new Uint8Array(parsedMediaData);
+      } else {
+        // If it's already a Uint8Array, use it directly
+        uint8Array = mediaData;
+      }
+
+      // Determine MIME type based on the type parameter
+      let mimeType: string;
+      if (type === "audio") {
+        mimeType = "audio/mpeg";
+      } else if (type === "video") {
+        mimeType = "video/mp4"; // Adjust for video
+      } else if (type === "image") {
+        mimeType = "image/jpeg"; // Adjust for images based on your data format
+      } else {
+        throw new Error("Unsupported media type");
+      }
+
+      // Create a blob and return the URL
+      const blob = new Blob([uint8Array], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error processing media data:", error);
+      return "";
+    }
   };
 
   const getQuestionSuggestions = (question: Question) => {
@@ -263,18 +304,21 @@ const SeriesPage = () => {
   const [isQuestionPlaying, setIsQuestionPlaying] = useState(false);
   const [questionVolume, setQuestionVolume] = useState(0.5);
 
-  const [isAudioEnded, setIsAudioEnded] = useState(false);
+  const [, setIsAudioEnded] = useState(false);
 
-  interface ResultType {
-    questionId: String;
-    correct: boolean;
-  }
-
-  const [result, setResult] = useState<ResultType[] | undefined>([]);
+  // const [result, setResult] = useState<ResultType[]>([]);
+  const [result, setResult] = useState<ResultType[]>([]);
 
   const [isQuizComplete, setIsQuizComplete] = useState(false);
-  const { resultContext, setResultContext } = useContext(ResultContext);
-  const { mode, setMode } = useContext(ResultContext);
+  // const { mode, setMode } = useContext(ResultContext);
+
+  const context = useContext(ResultContext);
+  if (!context) {
+    throw new Error("useContext must be used within ResultContextProvider");
+  }
+
+  const { mode } = context;
+  const { setResultContext } = context;
 
   const handleAcceptClick = () => {
     const currentQuestion = questions[questionPosition];
@@ -306,7 +350,7 @@ const SeriesPage = () => {
     }
   };
 
-  // Use useEffect to log the final results once the quiz is marked complete
+  // // Use useEffect to log the final results once the quiz is marked complete
   useEffect(() => {
     if (isQuizComplete) {
       console.log("Final Results:", result);
@@ -318,6 +362,17 @@ const SeriesPage = () => {
       navigation({ to: "/series/results" });
     }
   }, [isQuizComplete, result]);
+
+  //   useEffect(() => {
+  //     if (isQuizComplete) {
+  //         console.log("Final Results:", result);
+  //         setResultContext(result);
+  //         setIsQuizComplete(false);
+  //         setQuestionPosition(0);
+  //         setResult([]);
+  //         navigation({ to: "/series/results" });
+  //     }
+  // }, [isQuizComplete, result]);
 
   const [hasVideo, setHasVideo] = useState(false);
   const [videoImage, setVideoImage] = useState(false);
@@ -463,6 +518,7 @@ const SeriesPage = () => {
     // Prepare for next question
     setTime(30);
     setIsAudioPlayed(false);
+    setIsVideoEnded(true);
 
     // Use setTimeout to ensure state updates are processed before moving to next question
     setTimeout(() => {
@@ -625,7 +681,7 @@ const SeriesPage = () => {
       <div className=" col-start-4 col-end-5 flex flex-col justify-around pt-8 items-center border-l ">
         <div className="flex flex-col gap-8">
           <div className="flex gap-4 justify-center ">
-            {numbersList.map((item, index) => {
+            {numbersList.map((_, index) => {
               return (
                 <div
                   className="h-12 w-12 p-4 border-solid border-2 border-white text-center font-bold"

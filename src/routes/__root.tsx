@@ -1,24 +1,15 @@
-// import { createRootRoute, Outlet } from "@tanstack/react-router";
-// import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-// import { Toaster } from "@/components/ui/toaster";
-// // import { createContext, useContext, useState } from "react";
 // import { ResultProvider } from "../components/ResultProvider";
+// import { createRootRoute, Outlet } from "@tanstack/react-router";
+// import { Toaster } from "@/components/ui/toaster";
 
 // const RouterComponent = () => {
-//   // const ResultContext = createContext([]);
-//   // const [ctxResult , setCtxResult] = useState<any[]>([]);
 //   return (
 //     <>
-//       {
-//         /*<ResultContext.Provider value={{ctxResult , setCtxResult}}>
-//       </ResultContext.Provider>*/
-//       }
-
-//       <ResultProvider>
-//         <Outlet />
-//       </ResultProvider>
-//       <Toaster />
-//       <TanStackRouterDevtools />
+//         <ResultProvider>
+//           <Outlet />
+//         </ResultProvider>
+//         <Toaster />
+//         {/*<TanStackRouterDevtools />*/}
 //     </>
 //   );
 // };
@@ -27,19 +18,38 @@
 //   component: RouterComponent,
 // });
 
+
 import { ResultProvider } from "../components/ResultProvider";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-// import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { Toaster } from "@/components/ui/toaster";
+import { useState } from "react";
 
+
+interface resultType {
+  questionId: number;
+  correct: boolean;
+}
 const RouterComponent = () => {
+  const [resultContext, setResultContext] = useState<resultType[]>([]);
+  const [mode, setMode] = useState("");
+
+  const getResult = (): resultType[] => {
+    return resultContext;
+  };
+
   return (
     <>
-        <ResultProvider>
-          <Outlet />
-        </ResultProvider>
-        <Toaster />
-        {/*<TanStackRouterDevtools />*/}
+      <ResultProvider
+        getResult={getResult}
+        resultContext={resultContext}
+        setResultContext={setResultContext}
+        mode={mode}
+        setMode={setMode}
+      >
+        <Outlet />
+      </ResultProvider>
+      <Toaster />
+      {/*<TanStackRouterDevtools />*/}
     </>
   );
 };

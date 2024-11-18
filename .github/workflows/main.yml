@@ -12,17 +12,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS builds (no 32-bit support as modern macOS doesn't support it)
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin'
+          # # macOS builds (no 32-bit support as modern macOS doesn't support it)
+          # - platform: 'macos-latest'
+          #   args: '--target aarch64-apple-darwin'
+          # - platform: 'macos-latest'
+          #   args: '--target x86_64-apple-darwin'
           
-          # Linux builds (64-bit and 32-bit)
-          - platform: 'ubuntu-22.04'
-            args: '--target x86_64-unknown-linux-gnu'
-          - platform: 'ubuntu-22.04'
-            args: '--target i686-unknown-linux-gnu'
+          # # Linux builds (64-bit and 32-bit)
+          # - platform: 'ubuntu-22.04'
+          #   args: '--target x86_64-unknown-linux-gnu'
+          # - platform: 'ubuntu-22.04'
+          #   args: '--target i686-unknown-linux-gnu'
           
           # Windows builds (64-bit and 32-bit)
           - platform: 'windows-latest'

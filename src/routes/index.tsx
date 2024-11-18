@@ -111,28 +111,28 @@ function Index() {
     const mainDB = await exists("roadcode.db", {
       baseDir: BaseDirectory.AppData,
     });
-    // const walDB = await exists("roadcode.db-wal", {
-    //   baseDir: BaseDirectory.AppLocalData,
-    // });
-    // const shDB = await exists("roadcode.db-shm", {
-    //   baseDir: BaseDirectory.AppLocalData,
-    // });
+    const walDB = await exists("roadcode.db-wal", {
+      baseDir: BaseDirectory.AppData,
+    });
+    const shDB = await exists("roadcode.db-shm", {
+      baseDir: BaseDirectory.AppData,
+    });
 
-    if (mainDB) {
+    if (mainDB && walDB && shDB) {
       await copyFile("roadcode.db", "roadcode.db", {
         fromPathBaseDir: BaseDirectory.AppData,
         toPathBaseDir: BaseDirectory.Desktop,
       });
 
-      // await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-      //   fromPathBaseDir: BaseDirectory.AppLocalData,
-      //   toPathBaseDir: BaseDirectory.Desktop,
-      // });
+      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+        fromPathBaseDir: BaseDirectory.AppLocalData,
+        toPathBaseDir: BaseDirectory.Desktop,
+      });
 
-      // await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-      //   fromPathBaseDir: BaseDirectory.AppLocalData,
-      //   toPathBaseDir: BaseDirectory.Desktop,
-      // });
+      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+        fromPathBaseDir: BaseDirectory.AppLocalData,
+        toPathBaseDir: BaseDirectory.Desktop,
+      });
 
       console.log("database exported");
     }
@@ -186,36 +186,36 @@ function Index() {
     const mainDB = await exists("roadcode.db", {
       baseDir: BaseDirectory.AppData,
     });
-    // const walDB = await exists("roadcode.db-wal", {
-    //   baseDir: BaseDirectory.AppData,
-    // });
-    // const shDB = await exists("roadcode.db-shm", {
-    //   baseDir: BaseDirectory.AppData,
-    // });
+    const walDB = await exists("roadcode.db-wal", {
+      baseDir: BaseDirectory.AppData,
+    });
+    const shDB = await exists("roadcode.db-shm", {
+      baseDir: BaseDirectory.AppData,
+    });
 
-    if (mainDB) {
+    if (mainDB && walDB && shDB) {
       await remove("roadcode.db", { baseDir: BaseDirectory.AppData });
-      // await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppData });
-      // await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppData });
+      await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppData });
+      await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppData });
       console.log("db is removed");
 
       await copyFile("roadcode.db", "roadcode.db", {
         fromPathBaseDir: BaseDirectory.Desktop,
         toPathBaseDir: BaseDirectory.AppData,
       });
-      // await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-      //   fromPathBaseDir: BaseDirectory.Desktop,
-      //   toPathBaseDir: BaseDirectory.AppData,
-      // });
-      // await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-      //   fromPathBaseDir: BaseDirectory.Desktop,
-      //   toPathBaseDir: BaseDirectory.AppData,
-      // });
+      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+        fromPathBaseDir: BaseDirectory.Desktop,
+        toPathBaseDir: BaseDirectory.AppData,
+      });
+      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+        fromPathBaseDir: BaseDirectory.Desktop,
+        toPathBaseDir: BaseDirectory.AppData,
+      });
 
       console.log("database imported");
       await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
-      // await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
-      // await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
+      await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
+      await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
     }
   };
 
@@ -260,7 +260,7 @@ function Index() {
         });
       }
     } else {
-      dbImportWindows();
+      await dbImportWindows();
       toast({
         variant: "succ",
         title: " لقد تم استيراد قاعدة البيانات بنجاح",

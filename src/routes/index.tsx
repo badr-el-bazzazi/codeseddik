@@ -70,6 +70,18 @@ interface CountResult {
   count: number;
 }
 
+interface DbFiles {
+  main: string;
+  wal: string;
+  shm: string;
+}
+
+const DB_FILES: DbFiles = {
+  main: "roadcode.db",
+  wal: "roadcode.db-wal",
+  shm: "roadcode.db-shm",
+};
+
 function Index() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -107,167 +119,329 @@ function Index() {
 
   const { mode, setMode } = context;
 
-  const dbExportWindows = async () => {
-    const mainDB = await exists("roadcode.db", {
-      baseDir: BaseDirectory.AppData,
-    });
-    const walDB = await exists("roadcode.db-wal", {
-      baseDir: BaseDirectory.AppData,
-    });
-    const shDB = await exists("roadcode.db-shm", {
-      baseDir: BaseDirectory.AppData,
-    });
+  // const dbExportWindows = async () => {
+  //   const mainDB = await exists("roadcode.db", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
+  //   const walDB = await exists("roadcode.db-wal", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
+  //   const shDB = await exists("roadcode.db-shm", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
 
-    if (mainDB && walDB && shDB) {
-      await copyFile("roadcode.db", "roadcode.db", {
-        fromPathBaseDir: BaseDirectory.AppData,
-        toPathBaseDir: BaseDirectory.Desktop,
-      });
+  //   if (mainDB && walDB && shDB) {
+  //     await copyFile("roadcode.db", "roadcode.db", {
+  //       fromPathBaseDir: BaseDirectory.AppData,
+  //       toPathBaseDir: BaseDirectory.Desktop,
+  //     });
 
-      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-        fromPathBaseDir: BaseDirectory.AppLocalData,
-        toPathBaseDir: BaseDirectory.Desktop,
-      });
+  //     await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+  //       fromPathBaseDir: BaseDirectory.AppLocalData,
+  //       toPathBaseDir: BaseDirectory.Desktop,
+  //     });
 
-      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-        fromPathBaseDir: BaseDirectory.AppLocalData,
-        toPathBaseDir: BaseDirectory.Desktop,
-      });
+  //     await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+  //       fromPathBaseDir: BaseDirectory.AppLocalData,
+  //       toPathBaseDir: BaseDirectory.Desktop,
+  //     });
 
-      console.log("database exported");
+  //     console.log("database exported");
+  //   }
+  // };
+
+  // const handleExport = async () => {
+  //   if (platform() === "linux") {
+  //     const mainDB = await exists("roadcode.db", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+  //     const walDB = await exists("roadcode.db-wal", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+  //     const shDB = await exists("roadcode.db-shm", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+
+  //     if (mainDB && walDB && shDB) {
+  //       await copyFile("roadcode.db", "roadcode.db", {
+  //         fromPathBaseDir: BaseDirectory.AppConfig,
+  //         toPathBaseDir: BaseDirectory.Desktop,
+  //       });
+
+  //       await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+  //         fromPathBaseDir: BaseDirectory.AppConfig,
+  //         toPathBaseDir: BaseDirectory.Desktop,
+  //       });
+
+  //       await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+  //         fromPathBaseDir: BaseDirectory.AppConfig,
+  //         toPathBaseDir: BaseDirectory.Desktop,
+  //       });
+
+  //       toast({
+  //         variant: "succ",
+  //         title: " لقد تم تصدير قاعدة البيانات بنجاح",
+  //         duration: 1000,
+  //       });
+  //     }
+  //   } else {
+  //     await dbExportWindows();
+  //     toast({
+  //       variant: "succ",
+  //       title: " لقد تم تصدير قاعدة البيانات بنجاح",
+  //       duration: 1000,
+  //     });
+  //   }
+  // };
+
+  // const dbImportWindows = async () => {
+  //   const mainDB = await exists("roadcode.db", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
+  //   const walDB = await exists("roadcode.db-wal", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
+  //   const shDB = await exists("roadcode.db-shm", {
+  //     baseDir: BaseDirectory.AppData,
+  //   });
+
+  //   if (mainDB && walDB && shDB) {
+  //     await remove("roadcode.db", { baseDir: BaseDirectory.AppData });
+  //     await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppData });
+  //     await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppData });
+  //     console.log("db is removed");
+
+  //     await copyFile("roadcode.db", "roadcode.db", {
+  //       fromPathBaseDir: BaseDirectory.Desktop,
+  //       toPathBaseDir: BaseDirectory.AppData,
+  //     });
+  //     await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+  //       fromPathBaseDir: BaseDirectory.Desktop,
+  //       toPathBaseDir: BaseDirectory.AppData,
+  //     });
+  //     await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+  //       fromPathBaseDir: BaseDirectory.Desktop,
+  //       toPathBaseDir: BaseDirectory.AppData,
+  //     });
+
+  //     console.log("database imported");
+  //     await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
+  //     await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
+  //     await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
+  //   }
+  // };
+
+  // const handleImport = async () => {
+  //   if (platform() === "linux") {
+  //     const mainDB = await exists("roadcode.db", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+  //     const walDB = await exists("roadcode.db-wal", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+  //     const shDB = await exists("roadcode.db-shm", {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+
+  //     if (mainDB && walDB && shDB) {
+  //       await remove("roadcode.db", { baseDir: BaseDirectory.AppConfig });
+  //       await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppConfig });
+  //       await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppConfig });
+  //       console.log("db is removed");
+
+  //       await copyFile("roadcode.db", "roadcode.db", {
+  //         fromPathBaseDir: BaseDirectory.Desktop,
+  //         toPathBaseDir: BaseDirectory.AppConfig,
+  //       });
+  //       await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+  //         fromPathBaseDir: BaseDirectory.Desktop,
+  //         toPathBaseDir: BaseDirectory.AppConfig,
+  //       });
+  //       await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+  //         fromPathBaseDir: BaseDirectory.Desktop,
+  //         toPathBaseDir: BaseDirectory.AppConfig,
+  //       });
+
+  //       await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
+  //       await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
+  //       await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
+  //       toast({
+  //         variant: "succ",
+  //         title: " لقد تم استيراد قاعدة البيانات بنجاح",
+  //         duration: 1000,
+  //       });
+  //     }
+  //   } else {
+  //     await dbImportWindows();
+  //     toast({
+  //       variant: "succ",
+  //       title: " لقد تم استيراد قاعدة البيانات بنجاح",
+  //       duration: 1000,
+  //     });
+  //   }
+  // };
+
+
+  const getDbPaths = (isWindows: boolean) => ({
+  sourceDir: isWindows ? BaseDirectory.AppData : BaseDirectory.AppConfig,
+  walDir: isWindows ? BaseDirectory.AppData : BaseDirectory.AppConfig,
+  shmDir: isWindows ? BaseDirectory.AppData : BaseDirectory.AppConfig
+});
+
+// Helper function to check if all DB files exist
+const checkDbFilesExist = async (directory: BaseDirectory) => {
+  try {
+    const mainExists = await exists(DB_FILES.main, { baseDir: directory });
+    const walExists = await exists(DB_FILES.wal, { baseDir: directory });
+    const shmExists = await exists(DB_FILES.shm, { baseDir: directory });
+    
+    // On Windows, we might only have the main file
+    const isWindows = platform() === "windows";
+    if (isWindows) {
+      return mainExists;
     }
-  };
+    
+    return mainExists && walExists && shmExists;
+  } catch (error) {
+    console.error("Error checking DB files:", error);
+    return false;
+  }
+};
 
-  const handleExport = async () => {
-    if (platform() === "linux") {
-      const mainDB = await exists("roadcode.db", {
-        baseDir: BaseDirectory.AppConfig,
-      });
-      const walDB = await exists("roadcode.db-wal", {
-        baseDir: BaseDirectory.AppConfig,
-      });
-      const shDB = await exists("roadcode.db-shm", {
-        baseDir: BaseDirectory.AppConfig,
-      });
-
-      if (mainDB && walDB && shDB) {
-        await copyFile("roadcode.db", "roadcode.db", {
-          fromPathBaseDir: BaseDirectory.AppConfig,
-          toPathBaseDir: BaseDirectory.Desktop,
-        });
-
-        await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-          fromPathBaseDir: BaseDirectory.AppConfig,
-          toPathBaseDir: BaseDirectory.Desktop,
-        });
-
-        await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-          fromPathBaseDir: BaseDirectory.AppConfig,
-          toPathBaseDir: BaseDirectory.Desktop,
-        });
-
-        toast({
-          variant: "succ",
-          title: " لقد تم تصدير قاعدة البيانات بنجاح",
-          duration: 1000,
-        });
-      }
-    } else {
-      await dbExportWindows();
-      toast({
-        variant: "succ",
-        title: " لقد تم تصدير قاعدة البيانات بنجاح",
-        duration: 1000,
-      });
-    }
-  };
-
-  const dbImportWindows = async () => {
-    const mainDB = await exists("roadcode.db", {
-      baseDir: BaseDirectory.AppData,
+// Helper function to copy a single DB file
+const copyDbFile = async (
+  filename: string, 
+  fromDir: BaseDirectory, 
+  toDir: BaseDirectory
+): Promise<boolean> => {
+  try {
+    await copyFile(filename, filename, {
+      fromPathBaseDir: fromDir,
+      toPathBaseDir: toDir,
     });
-    const walDB = await exists("roadcode.db-wal", {
-      baseDir: BaseDirectory.AppData,
-    });
-    const shDB = await exists("roadcode.db-shm", {
-      baseDir: BaseDirectory.AppData,
-    });
+    return true;
+  } catch (error) {
+    console.error(`Error copying ${filename}:`, error);
+    return false;
+  }
+};
 
-    if (mainDB && walDB && shDB) {
-      await remove("roadcode.db", { baseDir: BaseDirectory.AppData });
-      await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppData });
-      await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppData });
-      console.log("db is removed");
-
-      await copyFile("roadcode.db", "roadcode.db", {
-        fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppData,
-      });
-      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-        fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppData,
-      });
-      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-        fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppData,
-      });
-
-      console.log("database imported");
-      await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
-      await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
-      await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
+// Helper function to remove a single DB file
+const removeDbFile = async (
+  filename: string, 
+  directory: BaseDirectory
+): Promise<boolean> => {
+  try {
+    if (await exists(filename, { baseDir: directory })) {
+      await remove(filename, { baseDir: directory });
     }
-  };
+    return true;
+  } catch (error) {
+    console.error(`Error removing ${filename}:`, error);
+    return false;
+  }
+};
 
-  const handleImport = async () => {
-    if (platform() === "linux") {
-      const mainDB = await exists("roadcode.db", {
-        baseDir: BaseDirectory.AppConfig,
-      });
-      const walDB = await exists("roadcode.db-wal", {
-        baseDir: BaseDirectory.AppConfig,
-      });
-      const shDB = await exists("roadcode.db-shm", {
-        baseDir: BaseDirectory.AppConfig,
-      });
+const exportDatabase = async (): Promise<boolean> => {
+  try {
+    const isWindows = platform() === "windows";
+    const { sourceDir, walDir, shmDir } = getDbPaths(isWindows);
 
-      if (mainDB && walDB && shDB) {
-        await remove("roadcode.db", { baseDir: BaseDirectory.AppConfig });
-        await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppConfig });
-        await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppConfig });
-        console.log("db is removed");
-
-        await copyFile("roadcode.db", "roadcode.db", {
-          fromPathBaseDir: BaseDirectory.Desktop,
-          toPathBaseDir: BaseDirectory.AppConfig,
-        });
-        await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-          fromPathBaseDir: BaseDirectory.Desktop,
-          toPathBaseDir: BaseDirectory.AppConfig,
-        });
-        await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-          fromPathBaseDir: BaseDirectory.Desktop,
-          toPathBaseDir: BaseDirectory.AppConfig,
-        });
-
-        await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
-        await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
-        await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
-        toast({
-          variant: "succ",
-          title: " لقد تم استيراد قاعدة البيانات بنجاح",
-          duration: 1000,
-        });
-      }
-    } else {
-      await dbImportWindows();
-      toast({
-        variant: "succ",
-        title: " لقد تم استيراد قاعدة البيانات بنجاح",
-        duration: 1000,
-      });
+    if (!await checkDbFilesExist(sourceDir)) {
+      throw new Error("Source database files not found");
     }
-  };
+
+    // Copy main DB file
+    await copyDbFile(DB_FILES.main, sourceDir, BaseDirectory.Desktop);
+
+    // Copy WAL and SHM files if they exist (mainly for Linux)
+    if (!isWindows) {
+      await copyDbFile(DB_FILES.wal, walDir, BaseDirectory.Desktop);
+      await copyDbFile(DB_FILES.shm, shmDir, BaseDirectory.Desktop);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Export failed:", error);
+    return false;
+  }
+};
+
+const importDatabase = async (): Promise<boolean> => {
+  try {
+    const isWindows = platform() === "windows";
+    const { sourceDir, walDir, shmDir } = getDbPaths(isWindows);
+
+    // Check if source files exist on desktop
+    if (!await exists(DB_FILES.main, { baseDir: BaseDirectory.Desktop })) {
+      throw new Error("Source database file not found on desktop");
+    }
+
+    // Remove existing database files
+    await removeDbFile(DB_FILES.main, sourceDir);
+    if (!isWindows) {
+      await removeDbFile(DB_FILES.wal, walDir);
+      await removeDbFile(DB_FILES.shm, shmDir);
+    }
+
+    // Copy new database files
+    await copyDbFile(DB_FILES.main, BaseDirectory.Desktop, sourceDir);
+    
+    if (!isWindows && await exists(DB_FILES.wal, { baseDir: BaseDirectory.Desktop })) {
+      await copyDbFile(DB_FILES.wal, BaseDirectory.Desktop, walDir);
+      await copyDbFile(DB_FILES.shm, BaseDirectory.Desktop, shmDir);
+    }
+
+    // Clean up desktop files
+    await removeDbFile(DB_FILES.main, BaseDirectory.Desktop);
+    if (!isWindows) {
+      await removeDbFile(DB_FILES.wal, BaseDirectory.Desktop);
+      await removeDbFile(DB_FILES.shm, BaseDirectory.Desktop);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Import failed:", error);
+    return false;
+  }
+};
+
+// Usage in your component
+const handleExport = async () => {
+  const success = await exportDatabase();
+  if (success) {
+    toast({
+      variant: "succ",
+      title: "لقد تم تصدير قاعدة البيانات بنجاح",
+      duration: 1000,
+    });
+  } else {
+    toast({
+      variant: "destructive",
+      title: "فشل تصدير قاعدة البيانات",
+      duration: 1000,
+    });
+  }
+};
+
+const handleImport = async () => {
+  const success = await importDatabase();
+  if (success) {
+    toast({
+      variant: "succ",
+      title: "لقد تم استيراد قاعدة البيانات بنجاح",
+      duration: 1000,
+    });
+  } else {
+    toast({
+      variant: "destructive",
+      title: "فشل استيراد قاعدة البيانات",
+      duration: 1000,
+    });
+  }
+};
+
+  
 
   const [category, setCategory] = useState("");
 

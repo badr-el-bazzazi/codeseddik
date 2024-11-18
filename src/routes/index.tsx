@@ -109,30 +109,30 @@ function Index() {
 
   const dbExportWindows = async () => {
     const mainDB = await exists("roadcode.db", {
-      baseDir: BaseDirectory.AppLocalData,
+      baseDir: BaseDirectory.AppData,
     });
-    const walDB = await exists("roadcode.db-wal", {
-      baseDir: BaseDirectory.AppLocalData,
-    });
-    const shDB = await exists("roadcode.db-shm", {
-      baseDir: BaseDirectory.AppLocalData,
-    });
+    // const walDB = await exists("roadcode.db-wal", {
+    //   baseDir: BaseDirectory.AppLocalData,
+    // });
+    // const shDB = await exists("roadcode.db-shm", {
+    //   baseDir: BaseDirectory.AppLocalData,
+    // });
 
-    if (mainDB && walDB && shDB) {
+    if (mainDB) {
       await copyFile("roadcode.db", "roadcode.db", {
-        fromPathBaseDir: BaseDirectory.AppLocalData,
+        fromPathBaseDir: BaseDirectory.AppData,
         toPathBaseDir: BaseDirectory.Desktop,
       });
 
-      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-        fromPathBaseDir: BaseDirectory.AppLocalData,
-        toPathBaseDir: BaseDirectory.Desktop,
-      });
+      // await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+      //   fromPathBaseDir: BaseDirectory.AppLocalData,
+      //   toPathBaseDir: BaseDirectory.Desktop,
+      // });
 
-      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-        fromPathBaseDir: BaseDirectory.AppLocalData,
-        toPathBaseDir: BaseDirectory.Desktop,
-      });
+      // await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+      //   fromPathBaseDir: BaseDirectory.AppLocalData,
+      //   toPathBaseDir: BaseDirectory.Desktop,
+      // });
 
       console.log("database exported");
     }
@@ -173,7 +173,7 @@ function Index() {
         });
       }
     } else {
-      dbExportWindows();
+      await dbExportWindows();
       toast({
         variant: "succ",
         title: " لقد تم تصدير قاعدة البيانات بنجاح",
@@ -184,38 +184,38 @@ function Index() {
 
   const dbImportWindows = async () => {
     const mainDB = await exists("roadcode.db", {
-      baseDir: BaseDirectory.AppLocalData,
+      baseDir: BaseDirectory.AppData,
     });
-    const walDB = await exists("roadcode.db-wal", {
-      baseDir: BaseDirectory.AppLocalData,
-    });
-    const shDB = await exists("roadcode.db-shm", {
-      baseDir: BaseDirectory.AppLocalData,
-    });
+    // const walDB = await exists("roadcode.db-wal", {
+    //   baseDir: BaseDirectory.AppData,
+    // });
+    // const shDB = await exists("roadcode.db-shm", {
+    //   baseDir: BaseDirectory.AppData,
+    // });
 
-    if (mainDB && walDB && shDB) {
-      await remove("roadcode.db", { baseDir: BaseDirectory.AppLocalData });
-      await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppLocalData });
-      await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppLocalData });
+    if (mainDB) {
+      await remove("roadcode.db", { baseDir: BaseDirectory.AppData });
+      // await remove("roadcode.db-wal", { baseDir: BaseDirectory.AppData });
+      // await remove("roadcode.db-shm", { baseDir: BaseDirectory.AppData });
       console.log("db is removed");
 
       await copyFile("roadcode.db", "roadcode.db", {
         fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppLocalData,
+        toPathBaseDir: BaseDirectory.AppData,
       });
-      await copyFile("roadcode.db-wal", "roadcode.db-wal", {
-        fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppLocalData,
-      });
-      await copyFile("roadcode.db-shm", "roadcode.db-shm", {
-        fromPathBaseDir: BaseDirectory.Desktop,
-        toPathBaseDir: BaseDirectory.AppLocalData,
-      });
+      // await copyFile("roadcode.db-wal", "roadcode.db-wal", {
+      //   fromPathBaseDir: BaseDirectory.Desktop,
+      //   toPathBaseDir: BaseDirectory.AppData,
+      // });
+      // await copyFile("roadcode.db-shm", "roadcode.db-shm", {
+      //   fromPathBaseDir: BaseDirectory.Desktop,
+      //   toPathBaseDir: BaseDirectory.AppData,
+      // });
 
       console.log("database imported");
       await remove("roadcode.db", { baseDir: BaseDirectory.Desktop });
-      await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
-      await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
+      // await remove("roadcode.db-shm", { baseDir: BaseDirectory.Desktop });
+      // await remove("roadcode.db-wal", { baseDir: BaseDirectory.Desktop });
     }
   };
 

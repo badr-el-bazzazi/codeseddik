@@ -109,7 +109,7 @@ const QuestionDtail = () => {
     updateQuestionsHandler(values);
   };
 
-  const updateQuestionsHandler = async (values : any) => {
+  const updateQuestionsHandler = async (values: any) => {
     try {
       const db = await Database.load("sqlite:roadcode.db");
       await db.execute(
@@ -369,14 +369,14 @@ const QuestionDtail = () => {
     }
   };
 
-  const convertFileToBlob = (file : any) => {
+  const convertFileToBlob = (file: any) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const arrayBuffer = reader.result;
         // Convert ArrayBuffer to Uint8Array for SQLite BLOB storage
         if (arrayBuffer != null) {
-          const uint8Array = new Uint8Array((arrayBuffer as ArrayBufferLike));
+          const uint8Array = new Uint8Array(arrayBuffer as ArrayBufferLike);
           resolve(uint8Array);
         }
       };
@@ -385,13 +385,13 @@ const QuestionDtail = () => {
     });
   };
 
-  const handleFileChange = async (e : any, field : any, setFileData : any) => {
+  const handleFileChange = async (e: any, field: any, setFileData: any) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
         field.onChange(file); // Update form field
         const blobData = await convertFileToBlob(file);
-        setFileData((prevData : any) => [...prevData, blobData]);
+        setFileData((prevData: any) => [...prevData, blobData]);
       } catch (error) {
         console.error("Error processing file:", error);
       }
@@ -400,7 +400,59 @@ const QuestionDtail = () => {
 
   const [fileData, setFileData] = useState<Uint8Array[]>([]);
 
-  const getMediaURL = (mediaData: string | Uint8Array | undefined, type: string) => {
+  // for audios card and controls
+  const audioRefQuestion = useRef<HTMLAudioElement | any>();
+  const audioRefAnswer = useRef<HTMLAudioElement | any>();
+
+  const [questionVolume, setQuestionVolume] = useState(0.5);
+  const [answerVolume, setAnswerVolume] = useState(0.5);
+
+  const [isQuestionPlaying, setIsQuestionPlaying] = useState(false);
+  const [isAnswerPlaying, setIsAnswerPlaying] = useState(false);
+
+  // for audios and image inputs
+  const questionAnswerRef = useRef<HTMLInputElement>(null);
+  const questionImageRef = useRef<HTMLInputElement>(null);
+  const questionAudioRef = useRef<HTMLInputElement>(null);
+  const questionVideoRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await getQuestion(parseInt(questionid));
+    };
+
+    fetchData();
+
+    return () => {
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRefQuestion.current) {
+      audioRefQuestion.current.volume = questionVolume;
+    }
+  }, [questionVolume]);
+
+  const transformData = (questionne: any) => {
+    return {
+      questionType: questionne?.question_type || "1QMS",
+      question1: questionne?.question_1,
+      question2: questionne?.question_2,
+      questionSug1: questionne?.question_sug_1,
+      questionSug2: questionne?.question_sug_2,
+      questionSug3: questionne?.question_sug_3,
+      questionSug4: questionne?.question_sug_4,
+      questionCorrectAnswer: `${questionne?.correct_answer_code}`,
+    };
+  };
+
+  useEffect(() => {
+    if (questionne) {
+      form.reset(transformData(questionne));
+    }
+  }, [questionne]);
+
+  const getMediaURL = (mediaData: any, type: string) => {
     if (!mediaData) return "";
 
     try {
@@ -451,58 +503,7 @@ const QuestionDtail = () => {
       console.error("Error processing media data:", error);
       return "";
     }
-  }
-  // for audios card and controls
-  const audioRefQuestion = useRef<HTMLAudioElement | any>();
-  const audioRefAnswer = useRef<HTMLAudioElement | any>();
-
-  const [questionVolume, setQuestionVolume] = useState(0.5);
-  const [answerVolume, setAnswerVolume] = useState(0.5);
-
-  const [isQuestionPlaying, setIsQuestionPlaying] = useState(false);
-  const [isAnswerPlaying, setIsAnswerPlaying] = useState(false);
-
-  // for audios and image inputs
-  const questionAnswerRef = useRef<HTMLInputElement>(null);
-  const questionImageRef = useRef<HTMLInputElement>(null);
-  const questionAudioRef = useRef<HTMLInputElement>(null);
-  const questionVideoRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await getQuestion(parseInt(questionid));
-    };
-
-    fetchData();
-
-    return () => {
-    };
-  }, []);
-
-  useEffect(() => {
-    if (audioRefQuestion.current) {
-      audioRefQuestion.current.volume = questionVolume;
-    }
-  }, [questionVolume]);
-
-  const transformData = (questionne : any) => {
-    return {
-      questionType: questionne?.question_type || "1QMS",
-      question1: questionne?.question_1,
-      question2: questionne?.question_2,
-      questionSug1: questionne?.question_sug_1,
-      questionSug2: questionne?.question_sug_2,
-      questionSug3: questionne?.question_sug_3,
-      questionSug4: questionne?.question_sug_4,
-      questionCorrectAnswer: `${questionne?.correct_answer_code}`,
-    };
   };
-
-  useEffect(() => {
-    if (questionne) {
-      form.reset(transformData(questionne));
-    }
-  }, [questionne]);
 
   return (
     <div className="grid grid-cols-3 h-screen overflow-hidden">

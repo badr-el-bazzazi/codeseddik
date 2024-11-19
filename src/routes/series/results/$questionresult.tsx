@@ -87,63 +87,6 @@ const QuestionResultDetails = () => {
     };
   }, []);
 
-
-  const getMediaURL = (
-    mediaData: string | Uint8Array | undefined,
-    type: string,
-  ) => {
-    if (!mediaData) return "";
-
-    try {
-      let uint8Array: Uint8Array;
-
-      // Check if it's a base64-encoded image
-      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
-        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
-        return mediaData; // Directly return the base64 string as the src for the image
-      }
-
-      // Check if mediaData is a string and parse it (for non-image types)
-      if (typeof mediaData === "string") {
-        // Parse the string representation of the array
-        const parsedMediaData = JSON.parse(mediaData);
-
-        // Ensure it's an array-like structure of numbers
-        if (
-          !Array.isArray(parsedMediaData) ||
-          !parsedMediaData.every((item) => typeof item === "number")
-        ) {
-          throw new Error("Invalid media data format");
-        }
-
-        // Convert the parsed array to Uint8Array
-        uint8Array = new Uint8Array(parsedMediaData);
-      } else {
-        // If it's already a Uint8Array, use it directly
-        uint8Array = mediaData;
-      }
-
-      // Determine MIME type based on the type parameter
-      let mimeType: string;
-      if (type === "audio") {
-        mimeType = "audio/mpeg";
-      } else if (type === "video") {
-        mimeType = "video/mp4"; // Adjust for video
-      } else if (type === "image") {
-        mimeType = "image/jpeg"; // Adjust for images based on your data format
-      } else {
-        throw new Error("Unsupported media type");
-      }
-
-      // Create a blob and return the URL
-      const blob = new Blob([uint8Array], { type: mimeType });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Error processing media data:", error);
-      return "";
-    }
-  };
-
   const getQuestionSuggestions = (question: Question | undefined) => {
     if (question) {
       return Object.entries(question)
@@ -266,6 +209,61 @@ const QuestionResultDetails = () => {
     );
   });
 
+  const getMediaURL = (
+    mediaData: any,
+    type: any,
+  ) => {
+    if (!mediaData) return "";
+
+    try {
+      let uint8Array: Uint8Array;
+
+      // Check if it's a base64-encoded image
+      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+        return mediaData; // Directly return the base64 string as the src for the image
+      }
+
+      // Check if mediaData is a string and parse it (for non-image types)
+      if (typeof mediaData === "string") {
+        // Parse the string representation of the array
+        const parsedMediaData = JSON.parse(mediaData);
+
+        // Ensure it's an array-like structure of numbers
+        if (
+          !Array.isArray(parsedMediaData) ||
+          !parsedMediaData.every((item) => typeof item === "number")
+        ) {
+          throw new Error("Invalid media data format");
+        }
+
+        // Convert the parsed array to Uint8Array
+        uint8Array = new Uint8Array(parsedMediaData);
+      } else {
+        // If it's already a Uint8Array, use it directly
+        uint8Array = mediaData;
+      }
+
+      // Determine MIME type based on the type parameter
+      let mimeType: string;
+      if (type === "audio") {
+        mimeType = "audio/mpeg";
+      } else if (type === "video") {
+        mimeType = "video/mp4"; // Adjust for video
+      } else if (type === "image") {
+        mimeType = "image/jpeg"; // Adjust for images based on your data format
+      } else {
+        throw new Error("Unsupported media type");
+      }
+
+      // Create a blob and return the URL
+      const blob = new Blob([uint8Array], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error processing media data:", error);
+      return "";
+    }
+  };
   return (
     <div className="container mx-auto h-screen w-screen ">
       <div className="w-full h-full grid grid-rows-2  overflow-hidden ">

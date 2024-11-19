@@ -50,7 +50,7 @@ const QuestionResultDetails = () => {
 
   // const { resultContext, setResultContext } = useContext(ResultContext);
 
-  const [questionne, setQuestion] = useState<Question>();
+  const [questione, setQuestion] = useState<Question>();
 
   const getQuestion = async (question_id: number) => {
     try {
@@ -74,77 +74,26 @@ const QuestionResultDetails = () => {
     }
   };
 
+
   useEffect(() => {
     const fetchData = async () => {
       await getQuestion(parseInt(questionresult));
     };
 
     fetchData();
+    // console.log(questione);
     return () => {
     };
   }, []);
 
-  // const getMediaURL = (
-  //   mediaData: string | Uint8Array,
-  //   type: string,
-  // ) => {
-  //   if (!mediaData) return "";
+  // useEffect(() => {
+  //   console.log(questione);
+  // })
 
-  //   try {
-  //     let uint8Array: Uint8Array;
-
-  //     // Check if it's a base64-encoded image
-  //     if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
-  //       // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
-  //       return mediaData; // Directly return the base64 string as the src for the image
-  //     }
-
-  //     // Check if mediaData is a string and parse it (for non-image types)
-  //     if (typeof mediaData === "string") {
-  //       // Parse the string representation of the array
-  //       const parsedMediaData = JSON.parse(mediaData);
-
-  //       // Ensure it's an array-like structure of numbers
-  //       if (
-  //         !Array.isArray(parsedMediaData) ||
-  //         !parsedMediaData.every((item) => typeof item === "number")
-  //       ) {
-  //         throw new Error("Invalid media data format");
-  //       }
-
-  //       // Convert the parsed array to Uint8Array
-  //       uint8Array = new Uint8Array(parsedMediaData);
-  //     } else {
-  //       // If it's already a Uint8Array, use it directly
-  //       uint8Array = mediaData;
-  //     }
-
-  //     // Determine MIME type based on the type parameter
-  //     let mimeType: string;
-  //     if (type === "audio") {
-  //       mimeType = "audio/mpeg";
-  //     } else if (type === "video") {
-  //       mimeType = "video/mp4"; // Adjust for video
-  //     } else if (type === "image") {
-  //       mimeType = "image/jpeg"; // Adjust for images based on your data format
-  //     } else {
-  //       throw new Error("Unsupported media type");
-  //     }
-
-  //     // Create a blob and return the URL
-  //     const blob = new Blob([uint8Array], { type: mimeType });
-  //     return URL.createObjectURL(blob);
-  //   } catch (error) {
-  //     console.error("Error processing media data:", error);
-  //     return "";
-  //   }
-  // };
-
-  // Updated getMediaURL function with proper type handling
   const getMediaURL = (
-    mediaData: string | Uint8Array | undefined,
+    mediaData: string | Uint8Array,
     type: string,
-  ): string => {
+  ) => {
     if (!mediaData) return "";
 
     try {
@@ -152,13 +101,16 @@ const QuestionResultDetails = () => {
 
       // Check if it's a base64-encoded image
       if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
         return mediaData; // Directly return the base64 string as the src for the image
       }
 
       // Check if mediaData is a string and parse it (for non-image types)
       if (typeof mediaData === "string") {
+        // Parse the string representation of the array
         const parsedMediaData = JSON.parse(mediaData);
 
+        // Ensure it's an array-like structure of numbers
         if (
           !Array.isArray(parsedMediaData) ||
           !parsedMediaData.every((item) => typeof item === "number")
@@ -166,25 +118,26 @@ const QuestionResultDetails = () => {
           throw new Error("Invalid media data format");
         }
 
+        // Convert the parsed array to Uint8Array
         uint8Array = new Uint8Array(parsedMediaData);
-      } else if (mediaData instanceof Uint8Array) {
-        uint8Array = mediaData;
       } else {
-        return ""; // Return empty string for undefined or invalid input
+        // If it's already a Uint8Array, use it directly
+        uint8Array = mediaData;
       }
 
       // Determine MIME type based on the type parameter
-      const mimeTypes = {
-        audio: "audio/mpeg",
-        video: "video/mp4",
-        image: "image/jpeg",
-      };
-
-      const mimeType = mimeTypes[type as keyof typeof mimeTypes];
-      if (!mimeType) {
+      let mimeType: string;
+      if (type === "audio") {
+        mimeType = "audio/mpeg";
+      } else if (type === "video") {
+        mimeType = "video/mp4"; // Adjust for video
+      } else if (type === "image") {
+        mimeType = "image/jpeg"; // Adjust for images based on your data format
+      } else {
         throw new Error("Unsupported media type");
       }
 
+      // Create a blob and return the URL
       const blob = new Blob([uint8Array], { type: mimeType });
       return URL.createObjectURL(blob);
     } catch (error) {
@@ -202,17 +155,17 @@ const QuestionResultDetails = () => {
   };
   const audioRefAnswer = useRef<HTMLAudioElement | any>();
 
-  const suggestions = getQuestionSuggestions(questionne);
+  const suggestions = getQuestionSuggestions(questione);
 
   const questionsStrusture = () => {
     const correctAnswers =
-      questionne?.correct_answer_code?.toString()?.split("").map(Number) || [];
+      questione?.correct_answer_code?.toString()?.split("").map(Number) || [];
     const isCorrect = (index: number) => correctAnswers.includes(index + 1);
 
-    if (questionne?.question_type === "1QMS") {
+    if (questione?.question_type === "1QMS") {
       if (
-        questionne?.question_sug_3 !== "" ||
-        questionne?.question_sug_4 !== ""
+        questione?.question_sug_3 !== "" ||
+        questione?.question_sug_4 !== ""
       ) {
         return (
           <div
@@ -220,7 +173,7 @@ const QuestionResultDetails = () => {
             dir="rtl"
           >
             <p className="text-2xl text-center text-blue-700">
-              {questionne?.question_1}
+              {questione?.question_1}
             </p>
             {suggestions?.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -239,7 +192,7 @@ const QuestionResultDetails = () => {
             dir="rtl"
           >
             <p className="text-2xl text-blue-700">
-              {questionne?.question_1}
+              {questione?.question_1}
             </p>
             <div className="flex justify-center items-center gap-24 w-full font-bold">
               {suggestions?.map((item, index) => (
@@ -262,17 +215,17 @@ const QuestionResultDetails = () => {
         >
           <div className="flex flex-col justify-center items-center gap-4">
             <p className="text-2xl text-blue-700">
-              {questionne?.question_1}
+              {questione?.question_1}
             </p>
             <div className="flex justify-center items-center gap-12">
               <div className="flex items-center gap-2">
-                <p className="text-2xl">{questionne?.question_sug_1}</p>
+                <p className="text-2xl">{questione?.question_sug_1}</p>
                 {isCorrect(0)
                   ? <Check className="text-green-500 w-6 h-6" />
                   : <X className="text-red-500 w-6 h-6" />}
               </div>
               <div className="flex items-center gap-2">
-                <p className="text-2xl">{questionne?.question_sug_2}</p>
+                <p className="text-2xl">{questione?.question_sug_2}</p>
                 {isCorrect(1)
                   ? <Check className="text-green-500 w-6 h-6" />
                   : <X className="text-red-500 w-6 h-6" />}
@@ -281,12 +234,12 @@ const QuestionResultDetails = () => {
           </div>
           <div className="flex flex-col justify-center items-center gap-4">
             <p className="text-2xl text-center text-blue-700">
-              {questionne?.question_2}
+              {questione?.question_2}
             </p>
             <div className="flex justify-center items-center gap-12">
               <div className="flex items-center gap-2">
                 <p className="text-2xl text-center">
-                  {questionne?.question_sug_3}
+                  {questione?.question_sug_3}
                 </p>
                 {isCorrect(2)
                   ? <Check className="text-green-500 w-6 h-6" />
@@ -294,7 +247,7 @@ const QuestionResultDetails = () => {
               </div>
               <div className="flex items-center gap-2">
                 <p className="text-2xl text-center">
-                  {questionne?.question_sug_4}
+                  {questione?.question_sug_4}
                 </p>
                 {isCorrect(3)
                   ? <Check className="text-green-500 w-6 h-6" />
@@ -311,7 +264,7 @@ const QuestionResultDetails = () => {
 
   useEffect(() => {
     setHasVideo(
-      !!questionne?.question_video && questionne?.question_video.length > 0,
+      !!questione?.question_video && questione?.question_video.length > 0,
     );
   });
 
@@ -319,52 +272,29 @@ const QuestionResultDetails = () => {
     <div className="container mx-auto h-screen w-screen ">
       <div className="w-full h-full grid grid-rows-2  overflow-hidden ">
         <div className="row-start-1 row-end-2  border-b flex justify-center items-center overflow-hidden relative h-full">
-          {questionne?.question_image && (
+          {questione?.question_image && (
             <img
-              src={getMediaURL(questionne.question_image, "image")}
+              src={getMediaURL(questione.question_image, "image")}
               alt="question image"
               className="w-full h-full object-contain absolute inset-0"
             />
           )}
         </div>
         <div className="row-start-2 row-end-3 flex flex-col">
-          {
-            /*
-
-<div className="hidden">
-            <audio
-              controls
-              ref={audioRefAnswer}
-            >
-              <source
-                src={getMediaURL(
-                  questionne?.question_answer,
-                  "audio",
-                )}
-                type="audio/mpeg"
-              />
-            </audio>
-          </div>          */
-          }
+          {questione?.question_answer && (
+            <div className="hidden">
+              <audio controls ref={audioRefAnswer}>
+                <source
+                  src={getMediaURL(questione.question_answer, "audio")}
+                />
+              </audio>
+            </div>
+          )}
 
           <div className="" style={{ height: "100%" }}>
             {questionsStrusture()}
           </div>
 
-          <div className="hidden">
-            <audio
-              controls
-              ref={audioRefAnswer}
-            >
-              <source
-                src={getMediaURL(
-                  questionne?.question_answer,
-                  "audio",
-                )}
-                type="audio/mpeg"
-              />
-            </audio>
-          </div>
           <Card style={{ height: "11%" }}>
             <CardContent className="flex flex-row justify-center items-center gap-2 w-full">
               <div className="bg-white w-12 h-10 text-black rounded flex justify-center items-center">
@@ -511,14 +441,18 @@ const QuestionResultDetails = () => {
                       </DrawerHeader>
 
                       <div className="w-full h-full flex justify-center items-start">
-                        <video controls>
-                          <source
-                            src={getMediaURL(
-                              questionne?.question_video,
-                              "video",
-                            )}
-                          />
-                        </video>
+                        {questione?.question_video && (
+                          <div className="hidden">
+                            <video controls>
+                              <source
+                                src={getMediaURL(
+                                  questione.question_video,
+                                  "video",
+                                )}
+                              />
+                            </video>
+                          </div>
+                        )}
                       </div>
                       <DrawerFooter className="w-96">
                         <DrawerClose asChild>

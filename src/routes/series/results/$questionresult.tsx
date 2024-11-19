@@ -80,12 +80,118 @@ const QuestionResultDetails = () => {
     };
 
     fetchData();
-
-    // console.log(questionne);
-
     return () => {
     };
   }, []);
+
+  // const getMediaURL = (
+  //   mediaData: string | Uint8Array,
+  //   type: string,
+  // ) => {
+  //   if (!mediaData) return "";
+
+  //   try {
+  //     let uint8Array: Uint8Array;
+
+  //     // Check if it's a base64-encoded image
+  //     if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+  //       // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+  //       return mediaData; // Directly return the base64 string as the src for the image
+  //     }
+
+  //     // Check if mediaData is a string and parse it (for non-image types)
+  //     if (typeof mediaData === "string") {
+  //       // Parse the string representation of the array
+  //       const parsedMediaData = JSON.parse(mediaData);
+
+  //       // Ensure it's an array-like structure of numbers
+  //       if (
+  //         !Array.isArray(parsedMediaData) ||
+  //         !parsedMediaData.every((item) => typeof item === "number")
+  //       ) {
+  //         throw new Error("Invalid media data format");
+  //       }
+
+  //       // Convert the parsed array to Uint8Array
+  //       uint8Array = new Uint8Array(parsedMediaData);
+  //     } else {
+  //       // If it's already a Uint8Array, use it directly
+  //       uint8Array = mediaData;
+  //     }
+
+  //     // Determine MIME type based on the type parameter
+  //     let mimeType: string;
+  //     if (type === "audio") {
+  //       mimeType = "audio/mpeg";
+  //     } else if (type === "video") {
+  //       mimeType = "video/mp4"; // Adjust for video
+  //     } else if (type === "image") {
+  //       mimeType = "image/jpeg"; // Adjust for images based on your data format
+  //     } else {
+  //       throw new Error("Unsupported media type");
+  //     }
+
+  //     // Create a blob and return the URL
+  //     const blob = new Blob([uint8Array], { type: mimeType });
+  //     return URL.createObjectURL(blob);
+  //   } catch (error) {
+  //     console.error("Error processing media data:", error);
+  //     return "";
+  //   }
+  // };
+
+  // Updated getMediaURL function with proper type handling
+  const getMediaURL = (
+    mediaData: string | Uint8Array | undefined,
+    type: string,
+  ): string => {
+    if (!mediaData) return "";
+
+    try {
+      let uint8Array: Uint8Array;
+
+      // Check if it's a base64-encoded image
+      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+        return mediaData; // Directly return the base64 string as the src for the image
+      }
+
+      // Check if mediaData is a string and parse it (for non-image types)
+      if (typeof mediaData === "string") {
+        const parsedMediaData = JSON.parse(mediaData);
+
+        if (
+          !Array.isArray(parsedMediaData) ||
+          !parsedMediaData.every((item) => typeof item === "number")
+        ) {
+          throw new Error("Invalid media data format");
+        }
+
+        uint8Array = new Uint8Array(parsedMediaData);
+      } else if (mediaData instanceof Uint8Array) {
+        uint8Array = mediaData;
+      } else {
+        return ""; // Return empty string for undefined or invalid input
+      }
+
+      // Determine MIME type based on the type parameter
+      const mimeTypes = {
+        audio: "audio/mpeg",
+        video: "video/mp4",
+        image: "image/jpeg",
+      };
+
+      const mimeType = mimeTypes[type as keyof typeof mimeTypes];
+      if (!mimeType) {
+        throw new Error("Unsupported media type");
+      }
+
+      const blob = new Blob([uint8Array], { type: mimeType });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error processing media data:", error);
+      return "";
+    }
+  };
 
   const getQuestionSuggestions = (question: Question | undefined) => {
     if (question) {
@@ -209,112 +315,6 @@ const QuestionResultDetails = () => {
     );
   });
 
-  // const getMediaURL = (
-  //   mediaData: any,
-  //   type: any,
-  // ) => {
-  //   if (!mediaData) return "";
-
-  //   try {
-  //     let uint8Array: Uint8Array;
-
-  //     // Check if it's a base64-encoded image
-  //     if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
-  //       // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
-  //       return mediaData; // Directly return the base64 string as the src for the image
-  //     }
-
-  //     // Check if mediaData is a string and parse it (for non-image types)
-  //     if (typeof mediaData === "string") {
-  //       // Parse the string representation of the array
-  //       const parsedMediaData = JSON.parse(mediaData);
-
-  //       // Ensure it's an array-like structure of numbers
-  //       if (
-  //         !Array.isArray(parsedMediaData) ||
-  //         !parsedMediaData.every((item) => typeof item === "number")
-  //       ) {
-  //         throw new Error("Invalid media data format");
-  //       }
-
-  //       // Convert the parsed array to Uint8Array
-  //       uint8Array = new Uint8Array(parsedMediaData);
-  //     } else {
-  //       // If it's already a Uint8Array, use it directly
-  //       uint8Array = mediaData;
-  //     }
-
-  //     // Determine MIME type based on the type parameter
-  //     let mimeType: string;
-  //     if (type === "audio") {
-  //       mimeType = "audio/mpeg";
-  //     } else if (type === "video") {
-  //       mimeType = "video/mp4"; // Adjust for video
-  //     } else if (type === "image") {
-  //       mimeType = "image/jpeg"; // Adjust for images based on your data format
-  //     } else {
-  //       throw new Error("Unsupported media type");
-  //     }
-
-  //     // Create a blob and return the URL
-  //     const blob = new Blob([uint8Array], { type: mimeType });
-  //     return URL.createObjectURL(blob);
-  //   } catch (error) {
-  //     console.error("Error processing media data:", error);
-  //     return "";
-  //   }
-  // };
-
-  const getMediaURL = (mediaData: any, type: string): string => {
-    if (!mediaData) return "";
-
-    try {
-      let uint8Array: Uint8Array;
-
-      // Handle base64-encoded data directly
-      if (typeof mediaData === "string" && mediaData.startsWith("data:")) {
-        return mediaData; // Return base64 as is for direct usage
-      }
-
-      // Parse stringified Uint8Array (common in databases)
-      if (typeof mediaData === "string") {
-        const parsedData = JSON.parse(mediaData);
-
-        if (
-          !Array.isArray(parsedData) ||
-          !parsedData.every((value) => typeof value === "number")
-        ) {
-          throw new Error("Invalid media data format");
-        }
-
-        uint8Array = new Uint8Array(parsedData);
-      } else if (mediaData instanceof Uint8Array) {
-        uint8Array = mediaData;
-      } else {
-        throw new Error("Unsupported media data type");
-      }
-
-      // Determine MIME type
-      const mimeTypes: Record<string, string> = {
-        audio: "audio/mpeg",
-        video: "video/mp4",
-        image: "image/jpeg",
-      };
-
-      const mimeType = mimeTypes[type];
-      if (!mimeType) {
-        throw new Error(`Unsupported media type: ${type}`);
-      }
-
-      // Create a Blob and Object URL
-      const blob = new Blob([uint8Array], { type: mimeType });
-      return URL.createObjectURL(blob);
-    } catch (error: any) {
-      console.error("Error in getMediaURL:", error.message);
-      return ""; // Return an empty string on failure
-    }
-  };
-
   return (
     <div className="container mx-auto h-screen w-screen ">
       <div className="w-full h-full grid grid-rows-2  overflow-hidden ">
@@ -328,7 +328,10 @@ const QuestionResultDetails = () => {
           )}
         </div>
         <div className="row-start-2 row-end-3 flex flex-col">
-          <div className="hidden">
+          {
+            /*
+
+<div className="hidden">
             <audio
               controls
               ref={audioRefAnswer}
@@ -341,7 +344,8 @@ const QuestionResultDetails = () => {
                 type="audio/mpeg"
               />
             </audio>
-          </div>
+          </div>          */
+          }
 
           <div className="" style={{ height: "100%" }}>
             {questionsStrusture()}
@@ -369,10 +373,20 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    if (answerVolume > 0) {
-                      const newVolume = Math.max(answerVolume - 0.1, 0); // Decrease volume by 0.1, min 0
-                      setAnswerVolume(newVolume);
-                      audioRefAnswer.current.volume = newVolume;
+                    // if (answerVolume > 0) {
+                    //   const newVolume = Math.max(answerVolume - 0.1, 0); // Decrease volume by 0.1, min 0
+                    //   setAnswerVolume(newVolume);
+                    //   audioRefAnswer.current.volume = newVolume;
+                    // }
+
+                    try {
+                      if (answerVolume > 0 && audioRefAnswer.current) {
+                        const newVolume = Math.max(answerVolume - 0.1, 0);
+                        setAnswerVolume(newVolume);
+                        audioRefAnswer.current.volume = newVolume;
+                      }
+                    } catch (error) {
+                      console.error("Error decreasing volume:", error);
                     }
                   }}
                 >
@@ -382,11 +396,30 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    if (audioRefAnswer.current.paused) {
-                      audioRefAnswer.current.play();
-                      setIsAnswerPlaying(true);
-                    } else {
-                      audioRefAnswer.current.pause();
+                    // if (audioRefAnswer.current.paused) {
+                    //   audioRefAnswer.current.play();
+                    //   setIsAnswerPlaying(true);
+                    // } else {
+                    //   audioRefAnswer.current.pause();
+                    //   setIsAnswerPlaying(false);
+                    // }
+
+                    try {
+                      if (!audioRefAnswer.current) return;
+
+                      if (audioRefAnswer.current.paused) {
+                        audioRefAnswer.current.play()
+                          .then(() => setIsAnswerPlaying(true))
+                          .catch((error: any) => {
+                            console.error("Error playing audio:", error);
+                            setIsAnswerPlaying(false);
+                          });
+                      } else {
+                        audioRefAnswer.current.pause();
+                        setIsAnswerPlaying(false);
+                      }
+                    } catch (error) {
+                      console.error("Error controlling playback:", error);
                       setIsAnswerPlaying(false);
                     }
                   }}
@@ -398,8 +431,22 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    audioRefAnswer.current.currentTime = 0;
-                    setIsAnswerPlaying(true);
+                    // audioRefAnswer.current.currentTime = 0;
+                    // setIsAnswerPlaying(true);
+
+                    try {
+                      if (audioRefAnswer.current) {
+                        audioRefAnswer.current.currentTime = 0;
+                        audioRefAnswer.current.play()
+                          .then(() => setIsAnswerPlaying(true))
+                          .catch((error: any) => {
+                            console.error("Error restarting audio:", error);
+                            setIsAnswerPlaying(false);
+                          });
+                      }
+                    } catch (error) {
+                      console.error("Error resetting audio:", error);
+                    }
                   }}
                 >
                   <RotateCcw />
@@ -409,10 +456,20 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    if (answerVolume < 1) {
-                      const newVolume = Math.min(answerVolume + 0.1, 1); // Increase volume by 0.1, max 1
-                      setAnswerVolume(newVolume);
-                      audioRefAnswer.current.volume = newVolume;
+                    // if (answerVolume < 1) {
+                    //   const newVolume = Math.min(answerVolume + 0.1, 1); // Increase volume by 0.1, max 1
+                    //   setAnswerVolume(newVolume);
+                    //   audioRefAnswer.current.volume = newVolume;
+                    // }
+
+                    try {
+                      if (answerVolume < 1 && audioRefAnswer.current) {
+                        const newVolume = Math.min(answerVolume + 0.1, 1);
+                        setAnswerVolume(newVolume);
+                        audioRefAnswer.current.volume = newVolume;
+                      }
+                    } catch (error) {
+                      console.error("Error increasing volume:", error);
                     }
                   }}
                 >

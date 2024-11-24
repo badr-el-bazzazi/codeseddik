@@ -430,13 +430,13 @@ const SeriesPage = () => {
 
       if (acceptBtn.current && correctBtn.current && btnRefs.current) {
         acceptBtn.current.disabled = true;
-        correctBtn.current.disabled = true;
+        // correctBtn.current.disabled = true;
 
-        btnRefs.current.forEach((btn) => {
-          if (btn) {
-            btn.disabled = true;
-          }
-        });
+        // btnRefs.current.forEach((btn) => {
+        //   if (btn) {
+        //     btn.disabled = true;
+        //   }
+        // });
       }
 
       // disable pause/play Button
@@ -475,13 +475,13 @@ const SeriesPage = () => {
 
       if (acceptBtn.current && correctBtn.current) {
         acceptBtn.current.disabled = false;
-        correctBtn.current.disabled = false;
+        // correctBtn.current.disabled = false;
 
-        btnRefs.current.forEach((btn) => {
-          if (btn) {
-            btn.disabled = false;
-          }
-        });
+        // btnRefs.current.forEach((btn) => {
+        //   if (btn) {
+        //     btn.disabled = false;
+        //   }
+        // });
       }
     }
   };

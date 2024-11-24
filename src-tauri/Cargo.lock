@@ -556,7 +556,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "coderoad"
+name = "codeseddik"
 version = "0.1.0"
 dependencies = [
  "serde",

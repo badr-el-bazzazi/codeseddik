@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
-  "productName": "Code Seddik",
+  "productName": "Code-Seddik",
   "version": "0.1.0",
   "identifier": "codeseddik",
   "build": {
@@ -30,9 +30,19 @@
       "icons/128x128@2x.png",
       "icons/icon.ico"
     ],
-    "windows": {
-      "webviewInstallMode": {
-        "type": "offlineInstaller"
+    "linux": {
+      "rpm": {
+        "files": {},
+        "release": "1",
+        "preInstallScript": "scripts/prescript.sh",
+        "postInstallScript": "scripts/postscript.sh",
+        "preRemoveScript": "scripts/prescript.sh",
+        "postRemoveScript": "scripts/postscript.sh",
+        "conflicts": ["oldLib.rpm"],
+        "depends": ["newLib.rpm"],
+        "obsoletes": ["veryoldLib.rpm"],
+        "provides": ["coolLib.rpm"],
+        "desktopTemplate": "desktop-template.desktop"
       }
     }
   }

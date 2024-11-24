@@ -1,41 +1,21 @@
-{ lib
-, stdenv
-, makeWrapper
-, nodejs
-, nodePackages
-, rustPlatform
-, pkg-config
-, openssl
-, gtk3
-, webkitgtk
-, librsvg
-, libayatana-appindicator
-, shared-mime-info
-, glib-networking
-}:
+{ pkgs ? import <nixpkgs> {} }:
 
-let
-  pname = "Code-Seddik";
-  version = "0.1.0";
-in
-rustPlatform.buildRustPackage {
-  inherit pname version;
-  
+with pkgs;
+
+stdenv.mkDerivation rec {
+  pname = "code-seddik";  # Changed to match your project name
+  version = "1.0.0";
+
   src = ./.;
 
-  cargoLock = {
-    lockFile = ./src-tauri/Cargo.lock;
-  };
-
-  buildAndTestSubdir = "src-tauri";
-
-  # Include required dependencies for Node.js and TypeScript
   nativeBuildInputs = [
-    pkg-config
-    nodejs
-    nodePackages.npm
-    nodePackages.typescript # Add TypeScript explicitly
     makeWrapper
+    nodejs_20  # Specifically using Node.js 20
+    nodePackages_latest.npm  # Using latest npm
+    nodePackages_latest.typescript  # Using latest typescript
+    cargo
+    rustc
+    pkg-config
   ];
 
   buildInputs = [
@@ -44,32 +24,75 @@ rustPlatform.buildRustPackage {
     webkitgtk
     librsvg
     libayatana-appindicator
-    shared-mime-info
-    glib-networking
   ];
 
-  preBuild = ''
+  buildPhase = ''
     export HOME=$(mktemp -d)
-    export PATH=$PATH:$(pwd)/node_modules/.bin
+    
+    # Verify the project structure
+    if [ ! -d "src" ]; then
+      echo "Error: src directory not found!"
+      exit 1
+    fi
+    
+    if [ ! -d "src-tauri" ]; then
+      echo "Error: src-tauri directory not found!"
+      exit 1
+    fi
+
+    # Install npm dependencies
+    npm ci  # Using ci instead of install for more reliable builds
+
+    # Build the Vite + React frontend
+    # Removed typecheck since it's part of your build script
+    NODE_ENV=production npm run build
+
+    # Build the Tauri app
     cd src-tauri
-    npm install --production=false --force
-    ln -s $(which tsc) ./node_modules/.bin/tsc # Link system-installed TypeScript
-    npm run build
-    cd $sourceRoot
+    CARGO_HOME=$(mktemp -d) cargo build --release --verbose
+    cd ..
   '';
 
-  postInstall = ''
+  installPhase = ''
+    mkdir -p $out/bin
+    mkdir -p $out/share/applications
+    mkdir -p $out/share/icons/hicolor/128x128/apps
+
+    # Copy the binary
+    cp src-tauri/target/release/${pname} $out/bin/${pname}
+
+    # Create desktop entry
+    cat > $out/share/applications/${pname}.desktop << EOF
+    [Desktop Entry]
+    Name=Code Seddik
+    Exec=$out/bin/${pname}
+    Icon=${pname}
+    Type=Application
+    Categories=Development;
+    StartupWMClass=${pname}
+    EOF
+
+    # Copy icon
+    cp src-tauri/icons/128x128.png $out/share/icons/hicolor/128x128/apps/${pname}.png
+
+    # Wrap binary with required libraries
     wrapProgram $out/bin/${pname} \
-      --prefix GIO_EXTRA_MODULES : "${glib-networking}/lib/gio/modules" \
-      --prefix XDG_DATA_DIRS : "${gtk3}/share" \
-      --prefix XDG_DATA_DIRS : "${shared-mime-info}/share"
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath buildInputs}"
   '';
+
+  # Environment variables for the build
+  VITE_APP_VERSION = version;
+  NODE_ENV = "production";
+
+  # Prevent npm from trying to fetch dependencies during build
+  npmFlags = ["--offline"];
+
+  # Keep the node_modules directory for the build
+  dontPrune = true;
 
   meta = with lib; {
-    description = "Your Tauri application description";
-    homepage = "https://github.com/badr-el-bazzazi";
+    description = "A Tauri application built with Vite, React, and TypeScript";
     license = licenses.mit;
-    maintainers = with maintainers; [ "Badr El-Bazzazi" ];
     platforms = platforms.linux;
   };
 }

@@ -1,54 +1,61 @@
-name: Publish Tauri App
+name: 'publish'
 
 on:
   push:
-    branches: [main]
+    branches:
+      - release
 
 jobs:
   publish-tauri:
-    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
-      matrix:
-        args:
-          - '--target x86_64-unknown-linux-gnu'
-          - '--target i686-unknown-linux-gnu'
+      fail-fast: false
+    matrix:
+      include:
+        - platform: 'macos-latest'
+          args: '--target aarch64-apple-darwin'
+        - platform: 'macos-latest'
+          args: '--target x86_64-apple-darwin'
+        - platform: 'ubuntu-latest'
+          args: '--target x86_64-linux-musl' # 64-bit Debian
+        - platform: 'ubuntu-latest'
+          args: '--target i686-linux-musl'   # 32-bit Debian
+        - platform: 'windows-latest'
+          args: '--target x86_64-pc-windows-msvc'
+        - platform: 'windows-latest'
+          args: '--target i686-pc-windows-msvc'
 
+    runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - uses: actions/checkout@v4
 
-      - name: Install Rust Toolchain
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install Dependencies
-        run: npm install
+      - name: install dependencies (Debian only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Build Tauri App
-        uses: tauri-apps/tauri-action@v1
-        with:
-          target: ${{ matrix.args }}
+      - name: install frontend dependencies
+        run: yarn install
 
-      - name: Create Release
-        uses: actions/create-release@v1
+      - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v0.1.0  # Replace with your desired version
-          release_name: 'Code-Seddik v0.1.0'  # Replace with your desired name
-          draft: false  # Set to true for draft releases
-          prerelease: false  # Set to true for pre-releases
-          body: |
-            This is the latest release of Code-Seddik.
-            Check out the release notes for more details.
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: Code-Seddik
-          path: target/release/bundle
+          tagName: app-v__VERSION__
+          releaseName: 'App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

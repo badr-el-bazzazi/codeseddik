@@ -23,25 +23,21 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["rpm"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.ico"
     ],
-    "linux": {
-      "rpm": {
-        "release": "1",
-        "preInstallScript": "scripts/prescript.sh",
-        "postInstallScript": "scripts/postscript.sh",
-        "preRemoveScript": "scripts/prescript.sh",
-        "postRemoveScript": "scripts/postscript.sh",
-        "conflicts": ["oldLib.rpm"],
-        "depends": ["newLib.rpm"],
-        "obsoletes": ["veryoldLib.rpm"],
-        "provides": ["coolLib.rpm"],
-        "desktopTemplate": "desktop-template.desktop"
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      }
+    },
+    "linux" : {
+      "deb": {
+        "files": {}
       }
     }
   }

@@ -38,6 +38,46 @@
     "linux" : {
       "deb": {
         "files": {}
+      },
+      "rpm" : {
+        "files": {},
+        "depends" : [
+          "rustup",
+          "libappindicator-gtk3",
+          "webkit2gtk3",
+          "gtk3",
+          "libayatana-appindicator3",
+          "glibc",
+          "libX11",
+          "libXcomposite",
+          "libXcursor",
+          "libXdamage",
+          "libXrandr",
+          "libXtst",
+          "libgdk_pixbuf",
+          "webkit2gtk4.1-devel",
+          "gtk3-devel",
+          "openssl-devel",
+          "libappindicator-gtk3-devel",
+          "gcc",
+          "gcc-c++",
+          "make",
+          "libgcc",
+          "glibc-devel",
+          "libstdc++-devel",
+          "curl",
+          "wget",
+          "pkg-config"
+        ],
+        "preInstallScript": "scripts/prescript.sh",
+        "postInstallScript": "scripts/postscript.sh",
+        "preRemoveScript": "scripts/prescript.sh",
+        "postRemoveScript": "scripts/postscript.sh",
+        "conflicts": ["oldLib.rpm"],
+        "depends": ["newLib.rpm"],
+        "obsoletes": ["veryoldLib.rpm"],
+        "provides": ["coolLib.rpm"],
+        "desktopTemplate": "desktop-template.desktop"
       }
     }
   }

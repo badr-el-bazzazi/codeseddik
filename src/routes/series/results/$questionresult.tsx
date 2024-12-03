@@ -74,7 +74,6 @@ const QuestionResultDetails = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchData = async () => {
       await getQuestion(parseInt(questionresult));
@@ -442,7 +441,7 @@ const QuestionResultDetails = () => {
 
                       <div className="w-full h-full flex justify-center items-start">
                         {questione?.question_video && (
-                          <div className="hidden">
+                          <div>
                             <video controls>
                               <source
                                 src={getMediaURL(

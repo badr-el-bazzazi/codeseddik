@@ -13,8 +13,7 @@
     "windows": [
       {
         "title": "Code Seddik",
-        "fullscreen": true,
-        "resizable": false
+        "resizable": true
       }
     ],
     "security": {

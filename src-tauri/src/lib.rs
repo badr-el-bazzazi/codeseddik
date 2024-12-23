@@ -46,34 +46,34 @@ pub fn run() {
                 .add_migrations("sqlite:roadcode.db", migrations)
                 .build(),
         )
-        // .setup(|app| {
-        //     let main_window = app.get_webview_window("main").unwrap();
-        //     // Add the initialization script to prevent right-clicks
-        //     main_window
-        //         .eval(
-        //             r#"
-        //         document.addEventListener('contextmenu', (e) => {
-        //             e.preventDefault();
-        //             return false;
-        //         }, false);
-        //         // Prevent other keyboard shortcuts that might open context menu
-        //         document.addEventListener('keydown', (e) => {
-        //             // Prevent Shift + F10
-        //             if (e.shiftKey && e.keyCode === 121) {
-        //                 e.preventDefault();
-        //                 return false;
-        //             }
-        //             // Prevent Windows context menu key
-        //             if (e.keyCode === 93) {
-        //                 e.preventDefault();
-        //                 return false;
-        //             }
-        //         }, false);
-        //         "#,
-        //         )
-        //         .expect("Failed to inject right-click prevention script");
-        //     Ok(())
-        // })
+        .setup(|app| {
+            let main_window = app.get_webview_window("main").unwrap();
+            // Add the initialization script to prevent right-clicks
+            main_window
+                .eval(
+                    r#"
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    return false;
+                }, false);
+                // Prevent other keyboard shortcuts that might open context menu
+                document.addEventListener('keydown', (e) => {
+                    // Prevent Shift + F10
+                    if (e.shiftKey && e.keyCode === 121) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    // Prevent Windows context menu key
+                    if (e.keyCode === 93) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }, false);
+                "#,
+                )
+                .expect("Failed to inject right-click prevention script");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

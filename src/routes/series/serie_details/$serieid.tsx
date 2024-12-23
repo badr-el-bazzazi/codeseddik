@@ -543,49 +543,15 @@ const serieDetails = () => {
                 <DialogTitle>تعديل السلسلة</DialogTitle>
               </DialogHeader>
               <div>
-                {/*
-                
-                <Form {...serieFormResultSchema}>
-                  <form onSubmit={serieFormResultSchema.handleSubmit(onSubmitSerieResult)}>
-                    <div className="flex flex-col justify-center items-center gap-6">
-                      <FormField
-                        control={serieFormResultSchema.control}
-                        name="serie_result"
-                        render={({ field }) => (
-                          <FormItem className="w-60">
-                            <FormLabel>serie result</FormLabel>
-                            <FormControl>
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) =>
-                                handleFileChange(
-                                  e,
-                                  field,
-                                  setFileData,
-                                )}
-                            />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="space-y-2">
-                        <Button type="submit">تعديل</Button>
-                      </div>
-                    </div>
-                  </form>
-                </Form>
-                */}
                 <Form {...serieFormResult}>
                   <form onSubmit={serieFormResult.handleSubmit(onSubmitSerieResult)}>
-                    <div className="flex flex-col justify-center items-center gap-6">
+                    <div className="flex flex-col justify-center items-center gap-6" dir="rtl" >
                       <FormField
                         control={serieFormResult.control}
                         name="serie_result"
                         render={({ field }) => (
                           <FormItem className="w-60">
-                            <FormLabel>serie result</FormLabel>
+                            <FormLabel>تصحيح السلسلة</FormLabel>
                             <FormControl>
                               <Input
                                 type="file"

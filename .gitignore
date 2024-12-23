@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# nix
+.direnv/
+# .direnv/bin/*
+# .direnv/nix-profile-*
+# .direnv/nix-profile-*.rc
+# .direnv/*
+# .direnv/nix-profile-*

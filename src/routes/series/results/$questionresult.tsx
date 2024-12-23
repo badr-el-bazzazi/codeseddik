@@ -171,7 +171,7 @@ const QuestionResultDetails = () => {
             className="text-right flex flex-col justify-center items-center gap-4 h-full w-full font-bold "
             dir="rtl"
           >
-            <p className="text-2xl text-center text-blue-700">
+            <p className="text-2xl text-center font-bold">
               {questione?.question_1}
             </p>
             {suggestions?.map((item, index) => (
@@ -190,7 +190,7 @@ const QuestionResultDetails = () => {
             className="text-right flex flex-col justify-center items-center gap-4 h-full font-bold"
             dir="rtl"
           >
-            <p className="text-2xl text-blue-700">
+            <p className="text-2xl font-bold">
               {questione?.question_1}
             </p>
             <div className="flex justify-center items-center gap-24 w-full font-bold">
@@ -213,7 +213,7 @@ const QuestionResultDetails = () => {
           dir="rtl"
         >
           <div className="flex flex-col justify-center items-center gap-4">
-            <p className="text-2xl text-blue-700">
+            <p className="text-2xl font-bold">
               {questione?.question_1}
             </p>
             <div className="flex justify-center items-center gap-12">
@@ -232,7 +232,7 @@ const QuestionResultDetails = () => {
             </div>
           </div>
           <div className="flex flex-col justify-center items-center gap-4">
-            <p className="text-2xl text-center text-blue-700">
+            <p className="text-2xl text-center font-bold">
               {questione?.question_2}
             </p>
             <div className="flex justify-center items-center gap-12">
@@ -325,14 +325,6 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    // if (audioRefAnswer.current.paused) {
-                    //   audioRefAnswer.current.play();
-                    //   setIsAnswerPlaying(true);
-                    // } else {
-                    //   audioRefAnswer.current.pause();
-                    //   setIsAnswerPlaying(false);
-                    // }
-
                     try {
                       if (!audioRefAnswer.current) return;
 
@@ -385,12 +377,6 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    // if (answerVolume < 1) {
-                    //   const newVolume = Math.min(answerVolume + 0.1, 1); // Increase volume by 0.1, max 1
-                    //   setAnswerVolume(newVolume);
-                    //   audioRefAnswer.current.volume = newVolume;
-                    // }
-
                     try {
                       if (answerVolume < 1 && audioRefAnswer.current) {
                         const newVolume = Math.min(answerVolume + 0.1, 1);

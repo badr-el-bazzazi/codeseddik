@@ -140,10 +140,12 @@ const serieDetails = () => {
     questionInsertHandler(values);
   };
 
+
   const serieFormSchema = z.object({
     serieName: z.string(),
     serieCategory: z.string(),
   });
+
 
   const serieForm = useForm<z.infer<typeof serieFormSchema>>({
     resolver: zodResolver(serieFormSchema),
@@ -161,6 +163,37 @@ const serieDetails = () => {
       duration: 1000,
     });
   };
+
+
+  const serieFormResultSchema = z.object({
+    serie_result: z.instanceof(File),
+  });
+
+  const serieFormResult = useForm<z.infer<typeof serieFormResultSchema>>({
+    resolver: zodResolver(serieFormResultSchema),
+    defaultValues: {
+      serie_result: new File([], ""),
+    },
+  });
+
+  const onSubmitSerieResult = (values: z.infer<typeof serieFormResultSchema>) => {
+
+    serieResultUpdateHandler();
+    console.log("hadchi ghadi o kay9wad", values);
+    toast({
+      title: "تم تحديث السلسلة بنجاح",
+      duration: 1000,
+    });
+  };
+
+  // const onSubmitSerieResult = (values: z.infer<typeof serieFormResultSchema>) => {
+  //   // serieUpdateHandler(values.serieName, values.serieCategory);
+  //   // getSerieArray();
+  //   toast({
+  //     title: "تم تحديث السلسلة بنجاح",
+  //     duration: 1000,
+  //   });
+  // };
 
   const convertFileToBlob = (file: Object) => {
     console.log(typeof file);
@@ -190,7 +223,7 @@ const serieDetails = () => {
     console.log("delete is clicked");
   };
 
-  const questionInsertHandler = async (values :Question) => {
+  const questionInsertHandler = async (values: Question) => {
     console.log(typeof values);
     try {
       const db = await Database.load("sqlite:roadcode.db");
@@ -270,6 +303,16 @@ const serieDetails = () => {
     console.log("update series");
   };
 
+  const serieResultUpdateHandler = async (
+  ) => {
+    const db = await Database.load("sqlite:roadcode.db");
+    await db.execute(
+      "UPDATE SERIES SET serie_result = $1 WHERE serie_id = $2;",
+      [fileData[0], serieid],
+    );
+    console.log("update series");
+  };
+
   const [serie, setSerie] = useState<SerieType | null>(null);
 
   const getSerieArray = async () => {
@@ -340,16 +383,16 @@ const serieDetails = () => {
     }
   }, [questions]); // Add questions as dependency
 
-  const handleFileChange = async (e : any, field : any, setFileData : any) => {
-    console.log(typeof(e))
-    console.log(typeof(field))
-    console.log(typeof(setFileData))
+  const handleFileChange = async (e: any, field: any, setFileData: any) => {
+    console.log(typeof (e))
+    console.log(typeof (field))
+    console.log(typeof (setFileData))
     const file = e.target.files?.[0];
     if (file) {
       try {
         field.onChange(file); // Update form field
         const blobData = await convertFileToBlob(file);
-        setFileData((prevData : any) => [...prevData, blobData]);
+        setFileData((prevData: any) => [...prevData, blobData]);
       } catch (error) {
         console.error("Error processing file:", error);
       }
@@ -489,6 +532,85 @@ const serieDetails = () => {
               <ArrowLeft />
             </Link>
           </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Pen className="text-green-700" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>تعديل السلسلة</DialogTitle>
+              </DialogHeader>
+              <div>
+                {/*
+                
+                <Form {...serieFormResultSchema}>
+                  <form onSubmit={serieFormResultSchema.handleSubmit(onSubmitSerieResult)}>
+                    <div className="flex flex-col justify-center items-center gap-6">
+                      <FormField
+                        control={serieFormResultSchema.control}
+                        name="serie_result"
+                        render={({ field }) => (
+                          <FormItem className="w-60">
+                            <FormLabel>serie result</FormLabel>
+                            <FormControl>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) =>
+                                handleFileChange(
+                                  e,
+                                  field,
+                                  setFileData,
+                                )}
+                            />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="space-y-2">
+                        <Button type="submit">تعديل</Button>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+                */}
+                <Form {...serieFormResult}>
+                  <form onSubmit={serieFormResult.handleSubmit(onSubmitSerieResult)}>
+                    <div className="flex flex-col justify-center items-center gap-6">
+                      <FormField
+                        control={serieFormResult.control}
+                        name="serie_result"
+                        render={({ field }) => (
+                          <FormItem className="w-60">
+                            <FormLabel>serie result</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) =>
+                                  handleFileChange(
+                                    e,
+                                    field,
+                                    setFileData,
+                                  )}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="space-y-2">
+                        <Button type="submit">تعديل</Button>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

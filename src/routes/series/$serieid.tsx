@@ -231,7 +231,7 @@ const SeriesPage = () => {
             className="text-right flex flex-col justify-center items-center gap-4 h-full w-full flex-wrap"
             dir="rtl"
           >
-            <p className="text-1xl text-blue-700">
+            <p className="text-1xl font-bold">
               {questions[questionPosition]?.question_1}
             </p>
             {suggestions?.map((item, index) => {
@@ -249,7 +249,7 @@ const SeriesPage = () => {
             className="text-right flex flex-col justify-center items-center gap-4 h-full"
             dir="rtl"
           >
-            <p className="text-1xl text-blue-700">
+            <p className="text-1xl font-bold">
               {questions[questionPosition]?.question_1}
             </p>
             <div className="flex justify-center items-center gap-24 w-full">
@@ -266,9 +266,9 @@ const SeriesPage = () => {
       }
     } else {
       return (
-        <div className="flex flex-col justify-center items-center gap-4 w-4/6 text-right flex-wrap">
+        <div className="flex flex-col justify-center items-center gap-4 w-4/6 text-right flex-wrap" dir="rtl" >
           <div className="flex flex-col justify-center items-center gap-4">
-            <p className="text-1xl text-blue-700">
+            <p className="text-1xl font-bold">
               {questions[questionPosition]?.question_1}
             </p>
 
@@ -282,7 +282,7 @@ const SeriesPage = () => {
             </div>
           </div>
           <div className="flex flex-col justify-center items-center gap-4">
-            <p className="text-1xl text-blue-700">
+            <p className="text-1xl font-bold">
               {questions[questionPosition]?.question_2}
             </p>
 

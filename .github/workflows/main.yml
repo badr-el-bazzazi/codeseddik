@@ -1,10 +1,8 @@
 name: 'publish'
-
 on:
   push:
     branches:
       - main
-
 jobs:
   publish-tauri:
     permissions:
@@ -19,7 +17,7 @@ jobs:
           # - platform: 'macos-latest'
           #   args: '--target x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
-            args: '--target x86_64-unknown-linux-gnu' # Changed from musl to gnu
+            args: '--target x86_64-unknown-linux-gnu'
           # Uncomment the following for 32-bit Linux support
           # - platform: 'ubuntu-latest'
           #   args: '--target i686-unknown-linux-gnu'
@@ -27,14 +25,12 @@ jobs:
             args: '--target x86_64-pc-windows-msvc'
           - platform: 'windows-latest'
             args: '--target i686-pc-windows-msvc'
-
     runs-on: ${{ matrix.platform }}
-
     steps:
       # Step 1: Checkout the repository
       - uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js (Updated to 20.x)
+      # Step 2: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,18 +42,31 @@ jobs:
         with:
           targets: >
             ${{ 
-              matrix.platform == 'ubuntu-latest' && 'x86_64-unknown-linux-gnu' ||
+              matrix.platform == 'ubuntu-22.04' && 'x86_64-unknown-linux-gnu' ||
               matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc,i686-pc-windows-msvc' ||
               '' 
             }}
 
       # Step 4: Install dependencies for Linux
       - name: Install Linux Dependencies
-        if: matrix.platform == 'ubuntu-latest'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev || true
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libgdk3.0-cil \
+            libgdk-pixbuf2.0-dev \
+            libgdk3.0-cil-dev \
+            libsoup-3.0-dev
 
       # Step 5: Install frontend dependencies
       - name: Install Frontend Dependencies

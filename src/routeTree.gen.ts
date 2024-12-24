@@ -17,6 +17,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as SeriesSerieidImport } from './routes/series/$serieid'
 import { Route as SeriesResultsIndexImport } from './routes/series/results/index'
 import { Route as SeriesSeriedetailsSerieidImport } from './routes/series/serie_details/$serieid'
+import { Route as SeriesResultsResultdetailsImport } from './routes/series/results/resultdetails'
 import { Route as SeriesResultsQuestionresultImport } from './routes/series/results/$questionresult'
 import { Route as SeriesSeriedetailsQuestiondetailsQuestionidImport } from './routes/series/serie_details/question_details/$questionid'
 
@@ -50,6 +51,13 @@ const SeriesSeriedetailsSerieidRoute = SeriesSeriedetailsSerieidImport.update({
   path: '/series/serie_details/$serieid',
   getParentRoute: () => rootRoute,
 } as any)
+
+const SeriesResultsResultdetailsRoute = SeriesResultsResultdetailsImport.update(
+  {
+    path: '/series/results/resultdetails',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
 
 const SeriesResultsQuestionresultRoute =
   SeriesResultsQuestionresultImport.update({
@@ -95,6 +103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SeriesResultsQuestionresultImport
       parentRoute: typeof rootRoute
     }
+    '/series/results/resultdetails': {
+      id: '/series/results/resultdetails'
+      path: '/series/results/resultdetails'
+      fullPath: '/series/results/resultdetails'
+      preLoaderRoute: typeof SeriesResultsResultdetailsImport
+      parentRoute: typeof rootRoute
+    }
     '/series/serie_details/$serieid': {
       id: '/series/serie_details/$serieid'
       path: '/series/serie_details/$serieid'
@@ -126,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutLazyRoute
   '/series/$serieid': typeof SeriesSerieidRoute
   '/series/results/$questionresult': typeof SeriesResultsQuestionresultRoute
+  '/series/results/resultdetails': typeof SeriesResultsResultdetailsRoute
   '/series/serie_details/$serieid': typeof SeriesSeriedetailsSerieidRoute
   '/series/results': typeof SeriesResultsIndexRoute
   '/series/serie_details/question_details/$questionid': typeof SeriesSeriedetailsQuestiondetailsQuestionidRoute
@@ -136,6 +152,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
   '/series/$serieid': typeof SeriesSerieidRoute
   '/series/results/$questionresult': typeof SeriesResultsQuestionresultRoute
+  '/series/results/resultdetails': typeof SeriesResultsResultdetailsRoute
   '/series/serie_details/$serieid': typeof SeriesSeriedetailsSerieidRoute
   '/series/results': typeof SeriesResultsIndexRoute
   '/series/serie_details/question_details/$questionid': typeof SeriesSeriedetailsQuestiondetailsQuestionidRoute
@@ -147,6 +164,7 @@ export interface FileRoutesById {
   '/about': typeof AboutLazyRoute
   '/series/$serieid': typeof SeriesSerieidRoute
   '/series/results/$questionresult': typeof SeriesResultsQuestionresultRoute
+  '/series/results/resultdetails': typeof SeriesResultsResultdetailsRoute
   '/series/serie_details/$serieid': typeof SeriesSeriedetailsSerieidRoute
   '/series/results/': typeof SeriesResultsIndexRoute
   '/series/serie_details/question_details/$questionid': typeof SeriesSeriedetailsQuestiondetailsQuestionidRoute
@@ -159,6 +177,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/series/$serieid'
     | '/series/results/$questionresult'
+    | '/series/results/resultdetails'
     | '/series/serie_details/$serieid'
     | '/series/results'
     | '/series/serie_details/question_details/$questionid'
@@ -168,6 +187,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/series/$serieid'
     | '/series/results/$questionresult'
+    | '/series/results/resultdetails'
     | '/series/serie_details/$serieid'
     | '/series/results'
     | '/series/serie_details/question_details/$questionid'
@@ -177,6 +197,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/series/$serieid'
     | '/series/results/$questionresult'
+    | '/series/results/resultdetails'
     | '/series/serie_details/$serieid'
     | '/series/results/'
     | '/series/serie_details/question_details/$questionid'
@@ -188,6 +209,7 @@ export interface RootRouteChildren {
   AboutLazyRoute: typeof AboutLazyRoute
   SeriesSerieidRoute: typeof SeriesSerieidRoute
   SeriesResultsQuestionresultRoute: typeof SeriesResultsQuestionresultRoute
+  SeriesResultsResultdetailsRoute: typeof SeriesResultsResultdetailsRoute
   SeriesSeriedetailsSerieidRoute: typeof SeriesSeriedetailsSerieidRoute
   SeriesResultsIndexRoute: typeof SeriesResultsIndexRoute
   SeriesSeriedetailsQuestiondetailsQuestionidRoute: typeof SeriesSeriedetailsQuestiondetailsQuestionidRoute
@@ -198,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutLazyRoute: AboutLazyRoute,
   SeriesSerieidRoute: SeriesSerieidRoute,
   SeriesResultsQuestionresultRoute: SeriesResultsQuestionresultRoute,
+  SeriesResultsResultdetailsRoute: SeriesResultsResultdetailsRoute,
   SeriesSeriedetailsSerieidRoute: SeriesSeriedetailsSerieidRoute,
   SeriesResultsIndexRoute: SeriesResultsIndexRoute,
   SeriesSeriedetailsQuestiondetailsQuestionidRoute:
@@ -220,6 +243,7 @@ export const routeTree = rootRoute
         "/about",
         "/series/$serieid",
         "/series/results/$questionresult",
+        "/series/results/resultdetails",
         "/series/serie_details/$serieid",
         "/series/results/",
         "/series/serie_details/question_details/$questionid"
@@ -236,6 +260,9 @@ export const routeTree = rootRoute
     },
     "/series/results/$questionresult": {
       "filePath": "series/results/$questionresult.tsx"
+    },
+    "/series/results/resultdetails": {
+      "filePath": "series/results/resultdetails.tsx"
     },
     "/series/serie_details/$serieid": {
       "filePath": "series/serie_details/$serieid.tsx"

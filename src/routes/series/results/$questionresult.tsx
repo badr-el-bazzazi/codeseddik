@@ -48,7 +48,6 @@ const QuestionResultDetails = () => {
   const [answerVolume, setAnswerVolume] = useState(0.5);
   const [isAnswerPlaying, setIsAnswerPlaying] = useState(false);
 
-  // const { resultContext, setResultContext } = useContext(ResultContext);
 
   const [questione, setQuestion] = useState<Question>();
 
@@ -80,14 +79,10 @@ const QuestionResultDetails = () => {
     };
 
     fetchData();
-    // console.log(questione);
     return () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   console.log(questione);
-  // })
 
   const getMediaURL = (
     mediaData: string | Uint8Array,
@@ -302,11 +297,6 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    // if (answerVolume > 0) {
-                    //   const newVolume = Math.max(answerVolume - 0.1, 0); // Decrease volume by 0.1, min 0
-                    //   setAnswerVolume(newVolume);
-                    //   audioRefAnswer.current.volume = newVolume;
-                    // }
 
                     try {
                       if (answerVolume > 0 && audioRefAnswer.current) {
@@ -352,9 +342,6 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    // audioRefAnswer.current.currentTime = 0;
-                    // setIsAnswerPlaying(true);
-
                     try {
                       if (audioRefAnswer.current) {
                         audioRefAnswer.current.currentTime = 0;
@@ -395,7 +382,7 @@ const QuestionResultDetails = () => {
               <div>
                 <Button
                   onClick={() => {
-                    navigation({ to: "/series/results" });
+                    navigation({ to: "/series/results/resultdetails" });
                   }}
                   className="flex justify-center items-cener"
                 >

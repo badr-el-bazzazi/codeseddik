@@ -145,7 +145,7 @@ function ResultIndex() {
           )
         }
       </div>
-      <div className="bg-green-700 flex justify-center items-center gap-8  w-full" style={{ height: "10%" }}>
+      <div className="flex justify-center items-center gap-8  w-full" style={{ height: "10%" }}>
         <div>
           <Button
             onClick={() => {

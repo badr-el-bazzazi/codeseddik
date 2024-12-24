@@ -1,10 +1,9 @@
 name: 'publish'
-
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-
 jobs:
   publish-tauri:
     permissions:
@@ -13,63 +12,54 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Uncomment the following for macOS support
+          # macOS builds (no 32-bit support as modern macOS doesn't support it)
           # - platform: 'macos-latest'
-          #   args: '--target aarch64-apple-darwin'
+            # args: '--target aarch64-apple-darwin'
           # - platform: 'macos-latest'
-          #   args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-latest'
-            args: '--target x86_64-unknown-linux-gnu' # Changed from musl to gnu
-          # Uncomment the following for 32-bit Linux support
-          # - platform: 'ubuntu-latest'
-          #   args: '--target i686-unknown-linux-gnu'
-          - platform: 'windows-latest'
-            args: '--target x86_64-pc-windows-msvc'
-          - platform: 'windows-latest'
-            args: '--target i686-pc-windows-msvc'
-
+            # args: '--target x86_64-apple-darwin'
+          
+          # Linux builds (64-bit and 32-bit)
+          - platform: 'ubuntu-22.04'
+            args: '--target x86_64-unknown-linux-gnu'
+          # - platform: 'ubuntu-22.04'
+            # args: '--target i686-unknown-linux-gnu'
+          
+          # Windows builds (64-bit and 32-bit)
+          # - platform: 'windows-latest'
+            # args: '--target x86_64-pc-windows-msvc'
+          # - platform: 'windows-latest'
+            # args: '--target i686-pc-windows-msvc'
     runs-on: ${{ matrix.platform }}
-
     steps:
-      # Step 1: Checkout the repository
       - uses: actions/checkout@v4
-
-      # Step 2: Setup Node.js (Updated to 20.x)
-      - name: Setup Node.js
+      
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y gcc-multilib g++-multilib libssl-dev:i386 libwebkit2gtk-4.1-dev:i386
+      
+      - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-
-      # Step 3: Install Rust
-      - name: Install Rust stable
+          node-version: lts/*
+          cache: 'npm'
+      
+      - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: >
-            ${{ 
-              matrix.platform == 'ubuntu-latest' && 'x86_64-unknown-linux-gnu' ||
-              matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc,i686-pc-windows-msvc' ||
-              '' 
-            }}
-
-      # Step 4: Install dependencies for Linux
-      - name: Install Linux Dependencies
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev || true
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-      # Step 5: Install frontend dependencies
-      - name: Install Frontend Dependencies
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.platform == 'ubuntu-22.04' && 'x86_64-unknown-linux-gnu,i686-unknown-linux-gnu' || matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc,i686-pc-windows-msvc' }}
+      
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+      
+      - name: install frontend dependencies
         run: npm install
-
-      # Step 6: Build the Tauri app
-      - name: Build Tauri App
-        run: npx tauri build ${{ matrix.args }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Step 7: Create a release using Tauri action
+      
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Eye, Pen, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Pen, Trash2, ImageUp, Clapperboard, FileAudio, FileAudio2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -52,6 +52,11 @@ import {
 } from "@/components/ui/select";
 import { Link } from "@tanstack/react-router";
 import Database from "@tauri-apps/plugin-sql";
+// import {  exists } from "@tauri-apps/plugin-fs";
+// import { BaseDirectory } from "@tauri-apps/api/path";
+import { exists, BaseDirectory, mkdir, copyFile } from '@tauri-apps/plugin-fs';
+import { basename, join, appConfigDir, extname } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/plugin-dialog';
 import { createFileRoute } from "@tanstack/react-router";
 // import { ResultContext } from "@/components/ResultProvider";
 // import { Navigate } from "@tanstack/react-router";
@@ -196,7 +201,8 @@ const serieDetails = () => {
   // };
 
   const convertFileToBlob = (file: Object) => {
-    console.log(typeof file);
+    // console.log(typeof file);
+    // console.log(file)
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -223,8 +229,30 @@ const serieDetails = () => {
     console.log("delete is clicked");
   };
 
+  // const resourceFolder = async () => {
+
+  //   const resources = await exists('resouces', {
+  //     baseDir: BaseDirectory.AppConfig,
+  //   })
+
+  //   if (resources) {
+  //     console.log("hadchi rah kayn");
+  //   } else {
+  //     await mkdir('resources', {
+  //       baseDir: BaseDirectory.AppConfig,
+  //     });
+  //   }
+  // }
+
   const questionInsertHandler = async (values: Question) => {
-    console.log(typeof values);
+    // console.log(typeof values);
+    // resourceFolder();
+
+    const questionImagePathh = await copyFileToResources(questionImagePath);
+    const questionAudioPathh = await copyFileToResources(questionAudioPath);
+    const answerAudioPathh = await copyFileToResources(answerAudioPath);
+    const questionVideoPathh = await copyFileToResources(questionVideoPath);
+
     try {
       const db = await Database.load("sqlite:roadcode.db");
 
@@ -246,10 +274,14 @@ const serieDetails = () => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
         [
           values.question_type,
-          fileData[0], // Image blob
-          fileData[1], // Audio blob
-          fileData[2], // Audio blob
-          fileData[3], // Video blob
+          // fileData[0], // Image blob
+          // fileData[1], // Audio blob
+          // fileData[2], // Audio blob
+          // fileData[3], // Video blob
+          questionImagePathh,
+          questionAudioPathh,
+          answerAudioPathh,
+          questionVideoPathh,
           values.question_1,
           values.question_2,
           values.question_sug_1,
@@ -384,9 +416,12 @@ const serieDetails = () => {
   }, [questions]); // Add questions as dependency
 
   const handleFileChange = async (e: any, field: any, setFileData: any) => {
-    console.log(typeof (e))
-    console.log(typeof (field))
-    console.log(typeof (setFileData))
+    // console.log(typeof (e))
+    // console.log(typeof (field))
+    // console.log(typeof (setFileData))
+    // console.log(e)
+    // console.log(field)
+    // console.log(setFileData)
     const file = e.target.files?.[0];
     if (file) {
       try {
@@ -400,6 +435,127 @@ const serieDetails = () => {
   };
 
   const [fileData, setFileData] = useState<any[]>([]);
+
+  const [imageName, setImageName] = useState<string>("");
+  const [questionName, setQuetionName] = useState<string>("");
+  const [answerName, setAnswerName] = useState<string>("");
+  const [videoName, setVideoName] = useState<string>("");
+
+  const [questionAudioPath, setQuestionAudioPath] = useState<string>("");
+  const [answerAudioPath, setAnswerAudioPath] = useState<string>("");
+  const [questionImagePath, setQuestionImagePath] = useState<string>("");
+  const [questionVideoPath, setQuestionVideoPath] = useState<string>("");
+
+  const formClear = () => {
+
+    form.reset()
+    setImageName("");
+    setQuetionName("");
+    setAnswerName("");
+    setVideoName("");
+
+    setQuestionImagePath("");
+    setAnswerAudioPath("");
+    setQuestionAudioPath("");
+    setQuestionVideoPath("");
+  }
+
+
+  // const copyFileToResources = async (any: zabi) => {
+
+  //   /*
+  //     the below code is for copying files to the resource folder
+  //   */
+  //   const random = Math.ceil(Math.random() * 1000000);
+  //   const newFileName = `resources/${random}`
+  //   const appConfigDirPath = await appConfigDir();
+  //   if(zabi) {
+
+  //   await copyFile(zabi, await join(appConfigDirPath, newFileName));
+  //   }
+  //   // console.log("File copied successfully!");
+  //   // console.log(random);
+
+
+  //   const fullPath = `${appConfigDirPath}/resources/${random}`;
+
+  //   if (await exists(fullPath)) {
+  //     // console.log("aaaaaaaa hwaaaa lik a zabi lah yahdik");
+  //     console.log(fullPath)
+
+  //   }
+
+  //   return fullPath;
+  // }
+
+
+  // const copyFileToResources = async (filixx) => {
+  //   /*
+  //     The below code is for copying files to the resource folder
+  //   */
+
+  //   // Check if the source file exists
+  //   if (!(await exists(filixx))) {
+  //     console.error(`File not found: ${filixx}`);
+  //     return;
+  //   }
+
+  //   const random = Math.ceil(Math.random() * 1000000);
+  //   const appConfigDirPath = await appConfigDir();
+  //   console.log("App Config Directory:", appConfigDirPath);
+
+  //   const resourcesPath = await join(appConfigDirPath, "resources");
+
+  //   // Ensure 'resources/' directory exists
+  //   if (!(await exists(resourcesPath))) {
+  //     await mkdir(resourcesPath);
+  //   }
+
+  //   const newFileName = `${random}`;
+  //   const fullPath = await join(resourcesPath, newFileName);
+
+  //   await copyFile(filixx, fullPath);
+  //   console.log("File copied successfully!");
+
+  //   if (await exists(fullPath)) {
+  //     console.log("File available at:", fullPath);
+  //     return fullPath;
+  //   } else {
+  //     console.error("Error: File not found after copying.");
+  //   }
+  // };
+
+  const copyFileToResources = async (filixx) => {
+
+    if (filixx != "") {
+
+      if (!(await exists(filixx))) {
+        console.error(`File not found: ${filixx}`);
+        return null;
+      }
+
+      const random = Math.ceil(Math.random() * 1000000);
+      const appConfigDirPath = await appConfigDir();
+      const resourcesPath = await join(appConfigDirPath, "resources");
+
+      if (!(await exists(resourcesPath))) {
+        await mkdir(resourcesPath);
+      }
+
+      // Extract the file extension
+      const fileExtension = await extname(filixx);
+      const newFileName = `${random}.${fileExtension}`; // Retain the extension
+      const fullPath = await join(resourcesPath, newFileName);
+
+      await copyFile(filixx, fullPath);
+      console.log("File copied successfully:", fullPath);
+
+      return fullPath; // Now includes the correct extension
+    } else {
+      return "";
+    }
+
+  };
 
   const navigation = Route.useNavigate();
   const transformData = (serie: SerieType) => {
@@ -709,6 +865,8 @@ const serieDetails = () => {
                       render={({ field }) => (
                         <FormItem className="w-60">
                           <FormLabel>صورة السؤال</FormLabel>
+                          {/*
+
                           <FormControl>
                             <Input
                               type="file"
@@ -721,6 +879,24 @@ const serieDetails = () => {
                                 )}
                             />
                           </FormControl>
+*/}
+                          <div className="flex w-full max-w-sm items-center space-x-2 gap-4" >
+                            <Button onClick={async (e) => {
+                              e.preventDefault();
+                              const file = await open({
+                                multiple: false,
+                                directory: false,
+                              });
+                              if (file) {
+                                // console.log("path : ", file);
+                                setQuestionImagePath(file);
+                                setImageName(await basename(file));
+                              }
+                            }}>
+                              <ImageUp />
+                            </Button>
+                            <Input type="text" placeholder="File Name" value={imageName} disabled dir="ltr" />
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -734,16 +910,23 @@ const serieDetails = () => {
                             المقطع الصوتي - السؤال
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              accept="audio/*"
-                              onChange={(e) =>
-                                handleFileChange(
-                                  e,
-                                  field,
-                                  setFileData,
-                                )}
-                            />
+                            <div className="flex w-full max-w-sm items-center space-x-2 gap-4" >
+                              <Button onClick={async (e) => {
+                                e.preventDefault();
+                                const file = await open({
+                                  multiple: false,
+                                  directory: false,
+                                });
+                                if (file) {
+                                  // console.log("path : ", file);
+                                  setQuestionAudioPath(file);
+                                  setQuetionName(await basename(file));
+                                }
+                              }}>
+                                <FileAudio />
+                              </Button>
+                              <Input type="text" placeholder="File Name" value={questionName} disabled dir="ltr" />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -759,16 +942,23 @@ const serieDetails = () => {
                             المقطع الصوتي - الاجابة
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              accept="audio/*"
-                              onChange={(e) =>
-                                handleFileChange(
-                                  e,
-                                  field,
-                                  setFileData,
-                                )}
-                            />
+                            <div className="flex w-full max-w-sm items-center space-x-2 gap-4" >
+                              <Button onClick={async (e) => {
+                                e.preventDefault();
+                                const file = await open({
+                                  multiple: false,
+                                  directory: false,
+                                });
+                                if (file) {
+                                  // console.log("path : ", file);
+                                  setAnswerAudioPath(file);
+                                  setAnswerName(await basename(file));
+                                }
+                              }}>
+                                <FileAudio2 />
+                              </Button>
+                              <Input type="text" placeholder="File Name" value={answerName} disabled dir="ltr" />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -784,16 +974,23 @@ const serieDetails = () => {
                             مقطع الفيديو
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              type="file"
-                              accept="video/*"
-                              onChange={(e) =>
-                                handleFileChange(
-                                  e,
-                                  field,
-                                  setFileData,
-                                )}
-                            />
+                            <div className="flex w-full max-w-sm items-center space-x-2 gap-4" >
+                              <Button onClick={async (e) => {
+                                e.preventDefault();
+                                const file = await open({
+                                  multiple: false,
+                                  directory: false,
+                                });
+                                if (file) {
+                                  // console.log("path : ", file);
+                                  setQuestionVideoPath(file);
+                                  setVideoName(await basename(file));
+                                }
+                              }}>
+                                <Clapperboard />
+                              </Button>
+                              <Input type="text" placeholder="File Name" value={videoName} disabled dir="ltr" />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -816,7 +1013,10 @@ const serieDetails = () => {
                   </div>
                   <div className="col-start-1 col-end-3 flex justify-center items-center gap-4 h-1/6 ">
                     <DrawerClose asChild>
-                      <Button onClick={() => form.reset()}>
+                      <Button onClick={() => {
+
+                        formClear();
+                      }}>
                         الغاء
                       </Button>
                     </DrawerClose>
@@ -833,7 +1033,8 @@ const serieDetails = () => {
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
-                        form.reset();
+                        // form.reset();
+                        formClear();
                       }}
                     >
                       تصحيح

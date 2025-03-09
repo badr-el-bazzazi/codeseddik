@@ -290,8 +290,8 @@ function Index() {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (
-      values.username === "a.seddik" &&
-      values.password === "abd22051986"
+      values.username === "a" &&
+      values.password === "a"
     ) {
       setShowControles(true);
       toast({

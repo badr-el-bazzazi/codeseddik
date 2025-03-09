@@ -26,10 +26,10 @@ declare module "@tanstack/react-router" {
   }
 }
 
-window.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    return false;
-});
+// window.addEventListener('contextmenu', (e) => {
+//     e.preventDefault();
+//     return false;
+// });
 
 // Render the app
 const rootElement = document.getElementById("root")!;

@@ -13,12 +13,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResultContext } from "@/components/ResultProvider";
+import { convertFileSrc } from "@tauri-apps/api/core";
 interface Question {
   question_id: number;
-  question_image: Uint8Array;
-  question_audio: Uint8Array;
-  question_answer: Uint8Array;
-  question_video: Uint8Array;
+  // question_image: Uint8Array;
+  // question_audio: Uint8Array;
+  // question_answer: Uint8Array;
+  // question_video: Uint8Array;
+  question_image: string;
+  question_audio: string;
+  question_answer: string;
+  question_video: string;
   question_1: string;
   question_2: string;
   question_sug_1: string;
@@ -158,58 +163,58 @@ const SeriesPage = () => {
   };
 
 
-  const getMediaURL = (mediaData: string | Uint8Array, type: string) => {
-    if (!mediaData) return "";
+  // const getMediaURL = (mediaData: string | Uint8Array, type: string) => {
+  //   if (!mediaData) return "";
 
-    try {
-      let uint8Array: Uint8Array;
+  //   try {
+  //     let uint8Array: Uint8Array;
 
-      // Check if it's a base64-encoded image
-      if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
-        // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
-        return mediaData; // Directly return the base64 string as the src for the image
-      }
+  //     // Check if it's a base64-encoded image
+  //     if (typeof mediaData === "string" && mediaData.startsWith("data:image")) {
+  //       // If it's a base64-encoded string, no need for parsing, just handle it as a Blob
+  //       return mediaData; // Directly return the base64 string as the src for the image
+  //     }
 
-      // Check if mediaData is a string and parse it (for non-image types)
-      if (typeof mediaData === "string") {
-        // Parse the string representation of the array
-        const parsedMediaData = JSON.parse(mediaData);
+  //     // Check if mediaData is a string and parse it (for non-image types)
+  //     if (typeof mediaData === "string") {
+  //       // Parse the string representation of the array
+  //       const parsedMediaData = JSON.parse(mediaData);
 
-        // Ensure it's an array-like structure of numbers
-        if (
-          !Array.isArray(parsedMediaData) ||
-          !parsedMediaData.every((item) => typeof item === "number")
-        ) {
-          throw new Error("Invalid media data format");
-        }
+  //       // Ensure it's an array-like structure of numbers
+  //       if (
+  //         !Array.isArray(parsedMediaData) ||
+  //         !parsedMediaData.every((item) => typeof item === "number")
+  //       ) {
+  //         throw new Error("Invalid media data format");
+  //       }
 
-        // Convert the parsed array to Uint8Array
-        uint8Array = new Uint8Array(parsedMediaData);
-      } else {
-        // If it's already a Uint8Array, use it directly
-        uint8Array = mediaData;
-      }
+  //       // Convert the parsed array to Uint8Array
+  //       uint8Array = new Uint8Array(parsedMediaData);
+  //     } else {
+  //       // If it's already a Uint8Array, use it directly
+  //       uint8Array = mediaData;
+  //     }
 
-      // Determine MIME type based on the type parameter
-      let mimeType: string;
-      if (type === "audio") {
-        mimeType = "audio/mpeg";
-      } else if (type === "video") {
-        mimeType = "video/mp4"; // Adjust for video
-      } else if (type === "image") {
-        mimeType = "image/jpeg"; // Adjust for images based on your data format
-      } else {
-        throw new Error("Unsupported media type");
-      }
+  //     // Determine MIME type based on the type parameter
+  //     let mimeType: string;
+  //     if (type === "audio") {
+  //       mimeType = "audio/mpeg";
+  //     } else if (type === "video") {
+  //       mimeType = "video/mp4"; // Adjust for video
+  //     } else if (type === "image") {
+  //       mimeType = "image/jpeg"; // Adjust for images based on your data format
+  //     } else {
+  //       throw new Error("Unsupported media type");
+  //     }
 
-      // Create a blob and return the URL
-      const blob = new Blob([uint8Array], { type: mimeType });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Error processing media data:", error);
-      return "";
-    }
-  };
+  //     // Create a blob and return the URL
+  //     const blob = new Blob([uint8Array], { type: mimeType });
+  //     return URL.createObjectURL(blob);
+  //   } catch (error) {
+  //     console.error("Error processing media data:", error);
+  //     return "";
+  //   }
+  // };
 
   const getQuestionSuggestions = (question: Question) => {
     if (question) {
@@ -419,9 +424,9 @@ const SeriesPage = () => {
     const setupQuestion = () => {
       setIsVideoEnded(false);
       // Check if there's video content
-      const hasVideoContent = !!questions[questionPosition]?.question_video &&
-        questions[questionPosition]?.question_video.length > 0;
-
+      // const hasVideoContent = !!questions[questionPosition]?.question_video &&
+      //   questions[questionPosition]?.question_video.length > 0;
+      const hasVideoContent = questions[questionPosition]?.question_video != ""
       setHasVideo(hasVideoContent);
       setVideoImage(false);
       setIsAudioPlayed(false);
@@ -539,6 +544,11 @@ const SeriesPage = () => {
     }
   };
 
+  useEffect(() => {
+
+    console.log(questions[questionPosition]?.question_image);
+  })
+
   return (
     <div className="h-screen grid grid-cols-4 overflow-hidden">
       {/*image erea*/}
@@ -552,11 +562,11 @@ const SeriesPage = () => {
                 ref={videoRef}
                 onEnded={videoEnded}
               >
+                {/*
+                
+              */}
                 <source
-                  src={getMediaURL(
-                    questions[questionPosition]?.question_video,
-                    "video",
-                  )}
+                  src={convertFileSrc(questions[questionPosition]?.question_video)}
                 />
               </video>
             )
@@ -564,10 +574,7 @@ const SeriesPage = () => {
 
           {videoImage && (
             <img
-              src={getMediaURL(
-                questions[questionPosition]?.question_image,
-                "image",
-              )}
+              src={convertFileSrc(questions[questionPosition]?.question_image)}
               className="w-full h-full object-contain absolute inset-0"
             />
           )}
@@ -575,10 +582,7 @@ const SeriesPage = () => {
           {!hasVideo
             ? (
               <img
-                src={getMediaURL(
-                  questions[questionPosition]?.question_image,
-                  "image",
-                )}
+                src={convertFileSrc(questions[questionPosition]?.question_image)}
                 className="w-full h-full object-contain absolute inset-0"
               />
             )
@@ -590,10 +594,11 @@ const SeriesPage = () => {
             onEnded={handleAudioEnd}
           >
             <source
-              src={getMediaURL(
-                questions[questionPosition]?.question_audio,
-                "audio",
-              )}
+              src={
+                convertFileSrc(
+                  questions[questionPosition]?.question_audio
+                )
+              }
             />
           </audio>
         </div>
@@ -665,9 +670,8 @@ const SeriesPage = () => {
             : null}
 
           <div
-            className={`flex justify-center items-center border rounded py-4  w-72 ${
-              time <= 10 ? "bg-red-700" : ""
-            } `}
+            className={`flex justify-center items-center border rounded py-4  w-72 ${time <= 10 ? "bg-red-700" : ""
+              } `}
           >
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
               {time} s
